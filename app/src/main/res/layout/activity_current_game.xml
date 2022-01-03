@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.CurrentGameActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/current_game_cl_menubar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/BRESS_gray"
+        android:paddingHorizontal="30dp">
+
+        <ImageView
+            android:id="@+id/current_game_iv_logo"
+            android:layout_width="130dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/logo_bress_orange"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/current_game_iv_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_settings"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/current_game_cl_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@+id/current_game_cl_menubar"
+        android:layout_marginHorizontal="30dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/current_game_cl_game"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintTop_toTopOf="@id/current_game_cl_body"
+            android:background="@drawable/border">
+
+            <TextView
+                android:id="@+id/current_game_tv_game_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/BRESS_gray"
+                android:text="Je huidige wedstrijd"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                android:padding="5dp"
+                app:layout_constraintTop_toTopOf="@id/current_game_cl_game"/>
+
+            <TextView
+                android:id="@+id/current_game_tv_game_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/BRESS_orange"
+                android:text="Wedstrijd #1209"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                android:padding="5dp"
+                app:layout_constraintTop_toBottomOf="@id/current_game_tv_game_header"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@+id/current_game_tv_game_title"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Speler 1" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Speler 2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Locatie" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/current_game_tv_player1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Robin Schellius" />
+
+                    <TextView
+                        android:id="@+id/current_game_tv_player2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sies de Witte" />
+
+                    <TextView
+                        android:id="@+id/current_game_tv_field"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Baan 1" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/current_game_cl_game"
+            android:background="@drawable/border"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:id="@+id/current_game_tv_game_score"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/BRESS_orange"
+                android:padding="5dp"
+                android:text="Score"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/current_game_bn_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/black"
+                android:text="Vul score in"
+                android:layout_marginVertical="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/current_game_tv_game_score" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/current_game_cl_nogame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/current_game_cl_menubar"
+        android:layout_marginHorizontal="30dp">
+
+        <TextView
+            android:id="@+id/current_game_tv_nogame_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/BRESS_gray"
+            android:text="Je huidige wedstrijd"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="20dp"
+            android:padding="5dp"
+            app:layout_constraintTop_toTopOf="@id/current_game_cl_nogame"/>
+
+        <TextView
+            android:id="@+id/current_game_tv_nogame_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/BRESS_orange"
+            android:text="Je hebt op dit moment geen wedstrijd. \n\nJe krijgt ee notificatie als jouw volgende wedstrijd begint"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="20dp"
+            android:padding="5dp"
+            app:layout_constraintTop_toBottomOf="@id/current_game_tv_nogame_header"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/current_game_bn_logout"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Uitloggen"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
