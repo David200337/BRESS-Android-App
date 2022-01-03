@@ -1,0 +1,2 @@
+rootProject.name = "BRESS-tournooiplanner"
+include ':app'
