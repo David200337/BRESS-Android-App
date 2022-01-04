@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.IOException;
 
 import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.dao.interfaces.IAuth;
@@ -19,6 +22,10 @@ import nl.bress.tournamentplanner.domain.GameResponseWrapper;
 import nl.bress.tournamentplanner.domain.LoginModel;
 import nl.bress.tournamentplanner.domain.LoginResponse;
 import nl.bress.tournamentplanner.domain.LoginResponseWrapper;
+import nl.bress.tournamentplanner.domain.LogoutModel;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -33,6 +40,7 @@ public class CurrentGameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_current_game);
 
         SharedPreferences prefs = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("token", "");
 
         ConstraintLayout body = findViewById(R.id.current_game_cl_body);
         ConstraintLayout empty = findViewById(R.id.current_game_cl_nogame);
@@ -48,9 +56,24 @@ public class CurrentGameActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                Interceptor interceptor = new Interceptor() {
+                    @Override
+                    public okhttp3.Response intercept(Chain chain) throws IOException {
+                        Request newRequest = chain.request().newBuilder()
+                                .addHeader("Accept", "application/json")
+                                .addHeader("authorization", "Bearer " + token)
+                                .build();
+                        return chain.proceed(newRequest);
+                    }
+                };
+                OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
+                okHttpBuilder.addInterceptor(interceptor);
+                OkHttpClient okHttpClient = okHttpBuilder.build();
+
                 Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl("https://bress-api.azurewebsites.net/api/")
+                        .baseUrl(MainActivity.BASE_URL)
                         .addConverterFactory(GsonConverterFactory.create())
+                        .client(okHttpClient)
                         .build();
 
                 IGame service = retrofit.create(IGame.class);
@@ -73,7 +96,7 @@ public class CurrentGameActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<GameResponseWrapper> call, Throwable t) {
-                        System.out.println(t.getMessage());
+                        Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -85,12 +108,38 @@ public class CurrentGameActivity extends AppCompatActivity {
         logOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SharedPreferences.Editor edit = prefs.edit();
-                edit.remove("token");
-                edit.remove("playerId");
-                edit.commit();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Retrofit retrofit = new Retrofit.Builder()
+                                .baseUrl(MainActivity.BASE_URL)
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .build();
 
-                startActivity(new Intent(CurrentGameActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                        IAuth service = retrofit.create(IAuth.class);
+
+                        service.logout(new LogoutModel(prefs.getString("playerEmail", ""))).enqueue(new Callback<Object>() {
+
+                            @Override
+                            public void onResponse(Call<Object> call, Response<Object> response) {
+                                if(response.body() != null){
+                                    SharedPreferences.Editor edit = prefs.edit();
+                                    edit.remove("token");
+                                    edit.remove("playerId");
+                                    edit.remove("playerEmail");
+                                    edit.apply();
+
+                                    startActivity(new Intent(CurrentGameActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Object> call, Throwable t) {
+                                Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }).start();
             }
         });
     }

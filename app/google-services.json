@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "956526786585",
+    "project_id": "bress-4e9d4",
+    "storage_bucket": "bress-4e9d4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:956526786585:android:5c43f5180aba039cd45288",
+        "android_client_info": {
+          "package_name": "nl.bress.tournamentplanner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "956526786585-a1ogekp3qsbe5ef3sb1rc8lpj0jcobu7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSbSUzrQgUTU76qlaimM83EiEucVS4JoE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "956526786585-a1ogekp3qsbe5ef3sb1rc8lpj0jcobu7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
