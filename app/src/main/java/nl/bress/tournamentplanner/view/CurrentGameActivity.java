@@ -84,13 +84,15 @@ public class CurrentGameActivity extends AppCompatActivity {
                     public void onResponse(Call<GameResponseWrapper> call, Response<GameResponseWrapper> response) {
                         if(response.body() != null){
                             Game game = response.body().result;
-                            tv_game_title.setText("Wedstrijd #" + game.id);
-                            tv_game_player1.setText(game.player1.name);
-                            tv_game_player2.setText(game.player2.name);
-                            tv_game_field.setText(game.field.name);
+                            if(game != null){
+                                tv_game_title.setText("Wedstrijd #" + game.id);
+                                tv_game_player1.setText(game.player1.name);
+                                tv_game_player2.setText(game.player2.name);
+                                tv_game_field.setText(game.field.name);
 
-                            empty.setVisibility(View.GONE);
-                            body.setVisibility(View.VISIBLE);
+                                empty.setVisibility(View.GONE);
+                                body.setVisibility(View.VISIBLE);
+                            }
                         }
                     }
 
