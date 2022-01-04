@@ -8,7 +8,6 @@ import retrofit2.http.Path;
 
 public interface IGame {
 
-    @Headers("Content-Type:application/json")
     @GET("player/{playerId}/currentGame")
     Call<GameResponseWrapper> getCurrentGame(@Path("playerId") int id);
 }
