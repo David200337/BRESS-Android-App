@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/player1_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Naam1"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toTopOf="@id/player2_score"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/RG_1" />
+
+    <TextView
+        android:id="@+id/player2_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Naam2"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toBottomOf="@+id/RG_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/player1_score" />
+
+    <TextView
+        android:id="@+id/set1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Set 1"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="@+id/RG_1"
+        app:layout_constraintStart_toStartOf="@id/RG_1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/RG_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toEndOf="@id/player1_score"
+        app:layout_constraintTop_toBottomOf="@id/set1">
+
+        <RadioButton
+            android:id="@+id/RB_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/BRESS_orange"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/BRESS_orange"/>
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/set2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Set 2"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="@+id/RG_2"
+        app:layout_constraintStart_toStartOf="@id/RG_2"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/RG_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toEndOf="@id/RG_1"
+        app:layout_constraintTop_toBottomOf="@id/set2">
+
+        <RadioButton
+            android:id="@+id/RB_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/BRESS_orange" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/BRESS_orange" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/set3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:buttonTint="@color/BRESS_orange"
+        android:text="Set 3"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:textSize="17sp"
+        app:layout_constraintEnd_toEndOf="@+id/RG_3"
+        app:layout_constraintStart_toStartOf="@id/RG_3"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/RG_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        app:layout_constraintStart_toEndOf="@id/RG_2"
+        app:layout_constraintTop_toBottomOf="@id/set3">
+
+        <RadioButton
+            android:id="@+id/RB_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/BRESS_orange" />
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/BRESS_orange" />
+    </RadioGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
