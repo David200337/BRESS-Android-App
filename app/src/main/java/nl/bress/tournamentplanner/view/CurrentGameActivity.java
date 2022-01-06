@@ -13,10 +13,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 
@@ -102,7 +107,10 @@ public class CurrentGameActivity extends AppCompatActivity {
                             Game game = response.body().result;
                             if(game != null){
                                 SharedPreferences.Editor edit = prefs.edit();
-                                edit.putInt("gameId", game.getId());
+                                Gson gson = new Gson();
+                                String json = gson.toJson(game);
+                                edit.putString("currentGame", json);
+
                                 edit.apply();
 
                                 tv_game_title.setText("Wedstrijd #" + game.getId());
@@ -167,84 +175,162 @@ public class CurrentGameActivity extends AppCompatActivity {
     }
 
     public void openDialog() {
+        // Prepare dialog
         View dialogView = LayoutInflater.from(this).inflate(R.layout.layout_dialog, null);
         AlertDialog scoreDialog = new AlertDialog.Builder(this)
                 .setView(dialogView)
-                .setTitle("Score invullen")
-                .setNegativeButton("Annuleren", null)
-                .setPositiveButton("ok", null)
                 .create();
+        Gson gson = new Gson();
+        String json = prefs.getString("currentGame", "");
+        Game game = gson.fromJson(json, Game.class);
+
+        TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
+        TextView dialog_subtitle = dialogView.findViewById(R.id.dialog_subtitle);
 
         RadioButton rb1 = dialogView.findViewById(R.id.RB_1);
+        RadioButton rb2_1 = dialogView.findViewById(R.id.RB2_1);
         RadioButton rb2 = dialogView.findViewById(R.id.RB_2);
+        RadioButton rb2_2 = dialogView.findViewById(R.id.RB2_2);
         RadioButton rb3 = dialogView.findViewById(R.id.RB_3);
+        RadioButton rb2_3 = dialogView.findViewById(R.id.RB2_3);
+
         RadioGroup rg1 = dialogView.findViewById(R.id.RG_1);
         RadioGroup rg2 = dialogView.findViewById(R.id.RG_2);
         RadioGroup rg3 = dialogView.findViewById(R.id.RG_3);
 
-        scoreDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+        dialog_title.setText("Score invullen voor wedstrijd #" + game.getId());
+        dialog_subtitle.setText(game.getPlayer1().getName() + " tegen " + game.getPlayer2().getName() + " in " + game.getField().getName());
+
+        rb1.setText(prefs.getString("player1", "naam1"));
+        rb2.setText(prefs.getString("player1", "naam1"));
+        rb2_1.setText(prefs.getString("player2", "naam1"));
+        rb2_2.setText(prefs.getString("player2", "naam1"));
+
+        TextView set3 = dialogView.findViewById(R.id.dialog_set3);
+
+        //Listeners for showing set 3
+        rg1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onShow(DialogInterface dialogInterface) {
-
-                Button button = ((AlertDialog) scoreDialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                button.setOnClickListener(new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View view) {
-                        if(rg1.getCheckedRadioButtonId() != -1 && rg2.getCheckedRadioButtonId() != -1 && rg3.getCheckedRadioButtonId() != -1) {
-                            boolean[] score = new boolean[3];
-                            score[0] = rb1.isChecked();
-                            score[1] = rb2.isChecked();
-                            score[2] = rb3.isChecked();
-
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Interceptor interceptor = new Interceptor() {
-                                        @Override
-                                        public okhttp3.Response intercept(Chain chain) throws IOException {
-                                            Request newRequest = chain.request().newBuilder()
-                                                    .addHeader("Accept", "application/json")
-                                                    .addHeader("authorization", "Bearer " + token)
-                                                    .build();
-                                            return chain.proceed(newRequest);
-                                        }
-                                    };
-                                    OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
-                                    okHttpBuilder.addInterceptor(interceptor);
-                                    OkHttpClient okHttpClient = okHttpBuilder.build();
-
-                                    Retrofit retrofit = new Retrofit.Builder()
-                                            .baseUrl(MainActivity.BASE_URL)
-                                            .addConverterFactory(GsonConverterFactory.create())
-                                            .client(okHttpClient)
-                                            .build();
-
-                                    IGame service = retrofit.create(IGame.class);
-                                    Log.d("Data sent:", "PlayerId: " + prefs.getInt("playerId", 0) + " gameId: " + prefs.getInt("gameId", 0));
-                                    service.addScoreToCurrentGame(prefs.getInt("playerId", 0), prefs.getInt("gameId", 0), new ScoreModel(score)).enqueue(new Callback<Object>() {
-
-                                        @Override
-                                        public void onResponse(Call<Object> call, Response<Object> response) {
-                                            if(response.body() != null){
-                                                Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
-                                                scoreDialog.dismiss();
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onFailure(Call<Object> call, Throwable t) {
-                                            Log.d("test", "onFailure: ");
-                                            Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                }
-                            }).start();
-                        } else {
-                            Toast.makeText(view.getContext(), "Vul alles in", Toast.LENGTH_SHORT).show();
-                        }
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(R.id.RB_1 == i) {
+                    if (rb2.isChecked()) {
+                        rb3.setText("Niemand");
+                        rb3.setChecked(true);
+                        rb2_3.setVisibility(View.GONE);
+                    } else {
+                        rb3.setText(game.getPlayer1().getName());
+                        rb2_3.setText(game.getPlayer2().getName());
+                        rb2_3.setVisibility(View.VISIBLE);
                     }
-                });
+                } else if (R.id.RB2_1 == i) {
+                    if(rb2_2.isChecked()) {
+                        rb3.setText("Niemand");
+                        rb3.setChecked(true);
+                        rb2_3.setVisibility(View.GONE);
+                    } else {
+                        rb3.setText(game.getPlayer1().getName());
+                        rb2_3.setText(game.getPlayer2().getName());
+                        rb2_3.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
+        });
+
+        rg2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(R.id.RB_2 == i) {
+                    if (rb1.isChecked()) {
+                        rb3.setText("Niemand");
+                        rb3.setChecked(true);
+                        rb2_3.setVisibility(View.GONE);
+                    } else {
+                        rb3.setText(game.getPlayer1().getName());
+                        rb2_3.setText(game.getPlayer2().getName());
+                        rb2_3.setVisibility(View.VISIBLE);
+                    }
+                } else if (R.id.RB2_2 == i) {
+                    if(rb2_1.isChecked()) {
+                        rb3.setText("Niemand");
+                        rb3.setChecked(true);
+                        rb2_3.setVisibility(View.GONE);
+                    } else {
+                        rb3.setText(game.getPlayer1().getName());
+                        rb2_3.setText(game.getPlayer2().getName());
+                        rb2_3.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
+        });
+
+        // Close dialog
+        ImageView close_btn = dialogView.findViewById(R.id.dialog_close);
+        close_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scoreDialog.dismiss();
+            }
+        });
+
+        // Confirm score
+        Button confirm_btn = dialogView.findViewById(R.id.dialog_confirm_btn);
+        confirm_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int setsPlayed = 2;
+                if(!(rb1.isChecked() && rb2.isChecked() || rb2_1.isChecked() && rb2_2.isChecked())) {
+                    setsPlayed ++;
+                }
+                boolean[] score = new boolean[setsPlayed];
+
+                score[0] = rb1.isChecked();
+                score[1] = rb2.isChecked();
+
+                if(score.length > 2) {
+                    score[2] = rb3.isChecked();
+                }
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Interceptor interceptor = new Interceptor() {
+                            @Override
+                            public okhttp3.Response intercept(Chain chain) throws IOException {
+                                Request newRequest = chain.request().newBuilder()
+                                        .addHeader("Accept", "application/json")
+                                        .addHeader("authorization", "Bearer " + token)
+                                        .build();
+                                return chain.proceed(newRequest);
+                            }
+                        };
+                        OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
+                        okHttpBuilder.addInterceptor(interceptor);
+                        OkHttpClient okHttpClient = okHttpBuilder.build();
+
+                        Retrofit retrofit = new Retrofit.Builder()
+                                .baseUrl(MainActivity.BASE_URL)
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .client(okHttpClient)
+                                .build();
+
+                        IGame service = retrofit.create(IGame.class);
+                        service.addScoreToCurrentGame(prefs.getInt("playerId", 0), game.getId(), new ScoreModel(score)).enqueue(new Callback<Object>() {
+
+                            @Override
+                            public void onResponse(Call<Object> call, Response<Object> response) {
+                                if(response.body() != null){
+                                    Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
+                                    scoreDialog.dismiss();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Object> call, Throwable t) {
+                                Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }).start();
             }
         });
         scoreDialog.show();
