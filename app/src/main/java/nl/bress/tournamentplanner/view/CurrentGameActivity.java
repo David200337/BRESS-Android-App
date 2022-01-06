@@ -3,6 +3,7 @@ package nl.bress.tournamentplanner.view;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -47,6 +48,18 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class CurrentGameActivity extends AppCompatActivity {
     private SharedPreferences prefs;
     private String token;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private ConstraintLayout body;
+    private ConstraintLayout empty;
+
+
+
+    private TextView tv_game_title;
+    private TextView tv_game_player1;
+    private TextView tv_game_player2;
+    private TextView tv_game_field;
+    private Button btn_game_score;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,16 +68,20 @@ public class CurrentGameActivity extends AppCompatActivity {
         prefs = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
         token = prefs.getString("token", "");
 
-        ConstraintLayout body = findViewById(R.id.current_game_cl_body);
-        ConstraintLayout empty = findViewById(R.id.current_game_cl_nogame);
+        swipeRefreshLayout = findViewById(R.id.current_game_srl);
+
+
+
+        body = findViewById(R.id.current_game_cl_body);
+        empty = findViewById(R.id.current_game_cl_nogame);
         body.setVisibility(View.GONE);
         empty.setVisibility(View.VISIBLE);
 
 
-        TextView tv_game_title = findViewById(R.id.current_game_tv_game_title);
-        TextView tv_game_player1 = findViewById(R.id.current_game_tv_player1);
-        TextView tv_game_player2 = findViewById(R.id.current_game_tv_player2);
-        TextView tv_game_field = findViewById(R.id.current_game_tv_field);
+        tv_game_title = findViewById(R.id.current_game_tv_game_title);
+        tv_game_player1 = findViewById(R.id.current_game_tv_player1);
+        tv_game_player2 = findViewById(R.id.current_game_tv_player2);
+        tv_game_field = findViewById(R.id.current_game_tv_field);
         Button btn_game_score = findViewById(R.id.current_game_bn_score);
         btn_game_score.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,6 +91,59 @@ public class CurrentGameActivity extends AppCompatActivity {
         });
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        getData();
+
+        Button logOutButton = findViewById(R.id.current_game_bn_logout);
+
+        logOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Retrofit retrofit = new Retrofit.Builder()
+                                .baseUrl(MainActivity.BASE_URL)
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .build();
+
+                        IAuth service = retrofit.create(IAuth.class);
+
+                        service.logout(new LogoutModel(prefs.getString("playerEmail", ""))).enqueue(new Callback<Object>() {
+
+                            @Override
+                            public void onResponse(Call<Object> call, Response<Object> response) {
+                                if(response.body() != null){
+                                    SharedPreferences.Editor edit = prefs.edit();
+                                    edit.remove("token");
+                                    edit.remove("playerId");
+                                    edit.remove("playerEmail");
+                                    edit.apply();
+
+                                    startActivity(new Intent(CurrentGameActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Object> call, Throwable t) {
+                                Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }).start();
+            }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getData();
+            }
+        });
+    }
+
+    private void getData(){
+        swipeRefreshLayout.setRefreshing(true);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -120,58 +190,22 @@ public class CurrentGameActivity extends AppCompatActivity {
 
                                 empty.setVisibility(View.GONE);
                                 body.setVisibility(View.VISIBLE);
+                            } else {
+                                empty.setVisibility(View.VISIBLE);
+                                body.setVisibility(View.GONE);
                             }
                         }
+                        swipeRefreshLayout.setRefreshing(false);
                     }
 
                     @Override
                     public void onFailure(Call<GameResponseWrapper> call, Throwable t) {
+                        swipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
             }
         }).start();
-
-
-        Button logOutButton = findViewById(R.id.current_game_bn_logout);
-
-        logOutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Retrofit retrofit = new Retrofit.Builder()
-                                .baseUrl(MainActivity.BASE_URL)
-                                .addConverterFactory(GsonConverterFactory.create())
-                                .build();
-
-                        IAuth service = retrofit.create(IAuth.class);
-
-                        service.logout(new LogoutModel(prefs.getString("playerEmail", ""))).enqueue(new Callback<Object>() {
-
-                            @Override
-                            public void onResponse(Call<Object> call, Response<Object> response) {
-                                if(response.body() != null){
-                                    SharedPreferences.Editor edit = prefs.edit();
-                                    edit.remove("token");
-                                    edit.remove("playerId");
-                                    edit.remove("playerEmail");
-                                    edit.apply();
-
-                                    startActivity(new Intent(CurrentGameActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Call<Object> call, Throwable t) {
-                                Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                }).start();
-            }
-        });
     }
 
     public void openDialog() {
