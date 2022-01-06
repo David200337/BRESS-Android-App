@@ -235,10 +235,10 @@ public class CurrentGameActivity extends AppCompatActivity {
         dialog_title.setText("Score invullen voor wedstrijd #" + game.getId());
         dialog_subtitle.setText(game.getPlayer1().getName() + " tegen " + game.getPlayer2().getName() + " in " + game.getField().getName());
 
-        rb1.setText(prefs.getString("player1", "naam1"));
-        rb2.setText(prefs.getString("player1", "naam1"));
-        rb2_1.setText(prefs.getString("player2", "naam1"));
-        rb2_2.setText(prefs.getString("player2", "naam1"));
+        rb1.setText(game.getPlayer1().getName());
+        rb2.setText(game.getPlayer1().getName());
+        rb2_1.setText(game.getPlayer2().getName());
+        rb2_2.setText(game.getPlayer2().getName());
 
         TextView set3 = dialogView.findViewById(R.id.dialog_set3);
 
