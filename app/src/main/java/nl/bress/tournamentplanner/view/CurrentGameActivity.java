@@ -355,6 +355,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                                 if(response.body() != null){
                                     Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
                                     scoreDialog.dismiss();
+                                    getData();
                                 }
                             }
 
