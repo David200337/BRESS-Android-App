@@ -1,9 +1,9 @@
 package nl.bress.tournamentplanner.domain;
 
 public class Field {
-    public int id;
-    public String name;
-    public boolean isAvailable;
+    private int id;
+    private String name;
+    private boolean isAvailable;
 
     public Field(int id, String name, boolean isAvailable) {
         this.id = id;

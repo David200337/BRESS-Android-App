@@ -1,14 +1,14 @@
 package nl.bress.tournamentplanner.domain;
 
 public class Game {
-    public int id;
-    public String score;
-    public int winner;
-    public boolean inQueue;
-    public boolean gameStarted;
-    public Field field;
-    public Player player1;
-    public Player player2;
+    private int id;
+    private String score;
+    private int winner;
+    private boolean inQueue;
+    private boolean gameStarted;
+    private Field field;
+    private Player player1;
+    private Player player2;
 
     public Game(int id, String score, int winner, boolean inQueue, boolean gameStarted, Field field, Player player1, Player player2) {
         this.id = id;

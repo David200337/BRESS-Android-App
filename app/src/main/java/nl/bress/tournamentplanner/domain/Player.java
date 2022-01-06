@@ -1,12 +1,12 @@
 package nl.bress.tournamentplanner.domain;
 
 public class Player {
-    public int id;
-    public String name;
-    public String email;
-    public String score;
-    public String pointBalance;
-    public SkillLevel skillLevel;
+    private int id;
+    private String name;
+    private String email;
+    private String score;
+    private String pointBalance;
+    private SkillLevel skillLevel;
 
     public Player(int id, String name, String email, String score, String pointBalance, SkillLevel skillLevel) {
         this.id = id;
