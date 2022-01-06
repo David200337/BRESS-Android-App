@@ -6,11 +6,9 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -22,8 +20,6 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
-import org.w3c.dom.Text;
-
 import java.io.IOException;
 
 import nl.bress.tournamentplanner.R;
@@ -31,9 +27,6 @@ import nl.bress.tournamentplanner.dao.interfaces.IAuth;
 import nl.bress.tournamentplanner.dao.interfaces.IGame;
 import nl.bress.tournamentplanner.domain.Game;
 import nl.bress.tournamentplanner.domain.GameResponseWrapper;
-import nl.bress.tournamentplanner.domain.LoginModel;
-import nl.bress.tournamentplanner.domain.LoginResponse;
-import nl.bress.tournamentplanner.domain.LoginResponseWrapper;
 import nl.bress.tournamentplanner.domain.LogoutModel;
 import nl.bress.tournamentplanner.domain.ScoreModel;
 import okhttp3.Interceptor;
@@ -52,7 +45,7 @@ public class CurrentGameActivity extends AppCompatActivity {
     private ConstraintLayout body;
     private ConstraintLayout empty;
 
-
+    private ImageView iv_refresh;
 
     private TextView tv_game_title;
     private TextView tv_game_player1;
@@ -70,7 +63,7 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         swipeRefreshLayout = findViewById(R.id.current_game_srl);
 
-
+        iv_refresh = findViewById(R.id.current_game_iv_refresh);
 
         body = findViewById(R.id.current_game_cl_body);
         empty = findViewById(R.id.current_game_cl_nogame);
@@ -137,6 +130,13 @@ public class CurrentGameActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                getData();
+            }
+        });
+
+        iv_refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 getData();
             }
         });
