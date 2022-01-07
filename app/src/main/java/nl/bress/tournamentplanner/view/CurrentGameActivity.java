@@ -44,6 +44,7 @@ public class CurrentGameActivity extends AppCompatActivity {
     private SwipeRefreshLayout swipeRefreshLayout;
     private ConstraintLayout body;
     private ConstraintLayout empty;
+    private ConstraintLayout next;
 
     private ImageView iv_refresh;
 
@@ -52,6 +53,10 @@ public class CurrentGameActivity extends AppCompatActivity {
     private TextView tv_game_player2;
     private TextView tv_game_field;
     private Button btn_game_score;
+
+    private TextView tv_nextgame_title;
+    private TextView tv_nextgame_player1;
+    private TextView tv_nextgame_player2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,9 +72,15 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         body = findViewById(R.id.current_game_cl_body);
         empty = findViewById(R.id.current_game_cl_nogame);
+        next = findViewById(R.id.next_game_cl_body);
+
+        next.setVisibility(View.GONE);
         body.setVisibility(View.GONE);
         empty.setVisibility(View.VISIBLE);
 
+        tv_nextgame_title = findViewById(R.id.next_game_tv_game_title);
+        tv_nextgame_player1 = findViewById(R.id.next_game_tv_player1);
+        tv_nextgame_player2 = findViewById(R.id.next_game_tv_player2);
 
         tv_game_title = findViewById(R.id.current_game_tv_game_title);
         tv_game_player1 = findViewById(R.id.current_game_tv_player1);
@@ -144,6 +155,10 @@ public class CurrentGameActivity extends AppCompatActivity {
 
     private void getData(){
         swipeRefreshLayout.setRefreshing(true);
+        empty.setVisibility(View.VISIBLE);
+        body.setVisibility(View.GONE);
+        next.setVisibility(View.GONE);
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -190,9 +205,38 @@ public class CurrentGameActivity extends AppCompatActivity {
 
                                 empty.setVisibility(View.GONE);
                                 body.setVisibility(View.VISIBLE);
-                            } else {
-                                empty.setVisibility(View.VISIBLE);
-                                body.setVisibility(View.GONE);
+                            }
+                        }
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+
+                    @Override
+                    public void onFailure(Call<GameResponseWrapper> call, Throwable t) {
+                        swipeRefreshLayout.setRefreshing(false);
+                        Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+
+                service.getNextGame(prefs.getInt("playerId", 0)).enqueue(new Callback<GameResponseWrapper>() {
+
+                    @Override
+                    public void onResponse(Call<GameResponseWrapper> call, Response<GameResponseWrapper> response) {
+                        if(response.body() != null){
+                            Game game = response.body().result;
+                            if(game != null){
+                                SharedPreferences.Editor edit = prefs.edit();
+                                Gson gson = new Gson();
+                                String json = gson.toJson(game);
+                                edit.putString("nextGame", json);
+
+                                edit.apply();
+
+                                tv_nextgame_title.setText("Wedstrijd #" + game.getId());
+                                tv_nextgame_player1.setText(game.getPlayer1().getName());
+                                tv_nextgame_player2.setText(game.getPlayer2().getName());
+
+                                empty.setVisibility(View.GONE);
+                                next.setVisibility(View.VISIBLE);
                             }
                         }
                         swipeRefreshLayout.setRefreshing(false);
