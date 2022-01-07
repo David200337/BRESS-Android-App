@@ -15,6 +15,9 @@ public interface IGame {
     @GET("player/{playerId}/currentGame")
     Call<GameResponseWrapper> getCurrentGame(@Path("playerId") int id);
 
+    @GET("player/{playerId}/nextGame")
+    Call<GameResponseWrapper> getNextGame(@Path("playerId") int id);
+
     @Headers("Content-Type:application/json")
     @PUT("player/{playerId}/currentGame/{gameId}")
     Call<Object> addScoreToCurrentGame(@Path("playerId") int id, @Path("gameId") int gameId, @Body ScoreModel score);
