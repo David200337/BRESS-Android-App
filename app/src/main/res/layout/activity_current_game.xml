@@ -106,17 +106,20 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Speler 1" />
+                                    android:text="Speler 1"
+                                    android:textColor="@color/default_text"/>
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Speler 2" />
+                                    android:text="Speler 2"
+                                    android:textColor="@color/default_text"/>
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Locatie" />
+                                    android:text="Locatie"
+                                    android:textColor="@color/default_text"/>
                             </LinearLayout>
 
                             <LinearLayout
@@ -129,19 +132,22 @@
                                     android:id="@+id/current_game_tv_player1"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Robin Schellius" />
+                                    android:text="Naam1"
+                                    android:textColor="@color/default_text"/>
 
                                 <TextView
                                     android:id="@+id/current_game_tv_player2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Sies de Witte" />
+                                    android:text="Naam2"
+                                    android:textColor="@color/default_text"/>
 
                                 <TextView
                                     android:id="@+id/current_game_tv_field"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Baan 1" />
+                                    android:text="zaal"
+                                    android:textColor="@color/default_text"/>
                             </LinearLayout>
                         </LinearLayout>
 
@@ -172,8 +178,9 @@
                             android:id="@+id/current_game_bn_score"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:backgroundTint="@color/black"
+                            android:backgroundTint="@color/score_btn"
                             android:text="Vul score in"
+                            android:textColor="@color/reversed_text"
                             android:layout_marginVertical="10dp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
@@ -231,6 +238,8 @@
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:text="Uitloggen"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/BRESS_orange"
         android:layout_marginBottom="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
