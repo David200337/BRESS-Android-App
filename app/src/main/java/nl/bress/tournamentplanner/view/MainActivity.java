@@ -11,11 +11,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+
+import org.w3c.dom.Text;
 
 import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.dao.interfaces.IAuth;
@@ -47,6 +50,14 @@ public class MainActivity extends AppCompatActivity {
         EditText et_email = findViewById(R.id.login_et_email);
         EditText et_password = findViewById(R.id.login_et_password);
         Button bn_confirm = findViewById(R.id.login_bn_confirm);
+        TextView bn_register = findViewById(R.id.register_link);
+
+        bn_register.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, RegisterActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+            }
+        });
 
         bn_confirm.setOnClickListener(new View.OnClickListener() {
             @Override
