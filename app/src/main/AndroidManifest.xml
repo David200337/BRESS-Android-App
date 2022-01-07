@@ -12,7 +12,13 @@
         android:roundIcon="@mipmap/ic_favicon_foreground"
         android:supportsRtl="true"
         android:theme="@style/Theme.BRESStournooiplanner">
-        <activity android:name=".view.CurrentGameActivity"></activity>
+        <activity
+            android:name=".view.NewPlayerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.RegisterActivity"
+            android:exported="false" />
+        <activity android:name=".view.CurrentGameActivity" />
         <activity
             android:name=".view.MainActivity"
             android:exported="true">

@@ -3,6 +3,8 @@ package nl.bress.tournamentplanner.dao.interfaces;
 import nl.bress.tournamentplanner.domain.LoginModel;
 import nl.bress.tournamentplanner.domain.LoginResponseWrapper;
 import nl.bress.tournamentplanner.domain.LogoutModel;
+import nl.bress.tournamentplanner.domain.RegisterModel;
+import nl.bress.tournamentplanner.domain.RegisterResponseWrapper;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -19,4 +21,8 @@ public interface IAuth {
     @Headers("Content-Type:application/json")
     @PUT("playerlogout")
     Call<Object> logout(@Body LogoutModel logout);
+
+    @Headers("Content-Type:application/json")
+    @POST("playerregister")
+    Call<RegisterResponseWrapper> register(@Body RegisterModel registerModel);
 }
