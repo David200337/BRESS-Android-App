@@ -9,6 +9,5 @@
         <item name="colorOnSecondary">@color/white</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">@color/BRESS_orange</item>
-        <!-- Customize your theme here. -->
     </style>
 </resources>

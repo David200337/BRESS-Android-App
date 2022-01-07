@@ -250,9 +250,11 @@ public class CurrentGameActivity extends AppCompatActivity {
                     if (rb2.isChecked()) {
                         rb3.setText("Niemand");
                         rb3.setChecked(true);
+                        rb3.setBackgroundResource(R.drawable.radio_single);
                         rb2_3.setVisibility(View.GONE);
                     } else {
                         rb3.setText(game.getPlayer1().getName());
+                        rb3.setBackgroundResource(R.drawable.radio_left_selector);
                         rb2_3.setText(game.getPlayer2().getName());
                         rb2_3.setVisibility(View.VISIBLE);
                     }
@@ -260,9 +262,11 @@ public class CurrentGameActivity extends AppCompatActivity {
                     if(rb2_2.isChecked()) {
                         rb3.setText("Niemand");
                         rb3.setChecked(true);
+                        rb3.setBackgroundResource(R.drawable.radio_single);
                         rb2_3.setVisibility(View.GONE);
                     } else {
                         rb3.setText(game.getPlayer1().getName());
+                        rb3.setBackgroundResource(R.drawable.radio_left_selector);
                         rb2_3.setText(game.getPlayer2().getName());
                         rb2_3.setVisibility(View.VISIBLE);
                     }
@@ -277,9 +281,11 @@ public class CurrentGameActivity extends AppCompatActivity {
                     if (rb1.isChecked()) {
                         rb3.setText("Niemand");
                         rb3.setChecked(true);
+                        rb3.setBackgroundResource(R.drawable.radio_single);
                         rb2_3.setVisibility(View.GONE);
                     } else {
                         rb3.setText(game.getPlayer1().getName());
+                        rb3.setBackgroundResource(R.drawable.radio_left_selector);
                         rb2_3.setText(game.getPlayer2().getName());
                         rb2_3.setVisibility(View.VISIBLE);
                     }
@@ -287,9 +293,11 @@ public class CurrentGameActivity extends AppCompatActivity {
                     if(rb2_1.isChecked()) {
                         rb3.setText("Niemand");
                         rb3.setChecked(true);
+                        rb3.setBackgroundResource(R.drawable.radio_single);
                         rb2_3.setVisibility(View.GONE);
                     } else {
                         rb3.setText(game.getPlayer1().getName());
+                        rb3.setBackgroundResource(R.drawable.radio_left_selector);
                         rb2_3.setText(game.getPlayer2().getName());
                         rb2_3.setVisibility(View.VISIBLE);
                     }
