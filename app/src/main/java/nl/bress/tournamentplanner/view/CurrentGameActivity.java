@@ -157,6 +157,7 @@ public class CurrentGameActivity extends AppCompatActivity {
         swipeRefreshLayout.setRefreshing(true);
         empty.setVisibility(View.VISIBLE);
         body.setVisibility(View.GONE);
+        next.setVisibility(View.GONE);
 
         new Thread(new Runnable() {
             @Override
@@ -235,7 +236,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                                 tv_nextgame_player2.setText(game.getPlayer2().getName());
 
                                 empty.setVisibility(View.GONE);
-                                body.setVisibility(View.VISIBLE);
+                                next.setVisibility(View.VISIBLE);
                             }
                         }
                         swipeRefreshLayout.setRefreshing(false);
