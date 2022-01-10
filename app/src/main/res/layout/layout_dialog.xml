@@ -8,38 +8,37 @@
 
 
     <TextView
-        android:id="@+id/dialog_set1"
+        android:id="@+id/dialog_set1_label"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:text="Set 1"
         android:textColor="@color/default_text"
-        app:layout_constraintBottom_toBottomOf="@+id/RG_1"
+        app:layout_constraintBottom_toBottomOf="@+id/dialog_set1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/RG_1" />
+        app:layout_constraintTop_toTopOf="@+id/dialog_set1" />
 
     <TextView
-        android:id="@+id/dialog_set2"
+        android:id="@+id/dialog_set2_label"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:text="Set 2"
         android:textColor="@color/default_text"
-        app:layout_constraintBottom_toBottomOf="@+id/RG_2"
+        app:layout_constraintBottom_toBottomOf="@+id/dialog_set2"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/RG_2"
-        app:layout_constraintVertical_bias="0.586" />
+        app:layout_constraintTop_toTopOf="@+id/dialog_set2" />
 
     <TextView
-        android:id="@+id/dialog_set3"
+        android:id="@+id/dialog_set3_label"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:text="Set 3"
         android:textColor="@color/default_text"
-        app:layout_constraintBottom_toBottomOf="@+id/RG_3"
+        app:layout_constraintBottom_toBottomOf="@+id/dialog_set3"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/RG_3"
+        app:layout_constraintTop_toTopOf="@+id/dialog_set3"
         app:layout_constraintVertical_bias="0.482" />
 
     <ImageView
@@ -89,136 +88,43 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/dialog_title" />
 
-    <RadioGroup
-        android:id="@+id/RG_1"
-        android:layout_width="0dp"
+    <include
+        android:id="@+id/dialog_set1"
+        layout="@layout/layout_set"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/dialog_set1"
-        app:layout_constraintTop_toBottomOf="@+id/dialog_subtitle"
-        app:layout_constraintWidth_default="spread">
-
-        <RadioButton
-            android:id="@+id/RB_1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/radio_left_selector"
-            android:button="@null"
-            android:checked="true"
-            android:gravity="center"
-            android:paddingHorizontal="20dp"
-            android:text="naam1"
-            android:textColor="@color/black"
-            android:textStyle="bold" />
-
-        <RadioButton
-            android:id="@+id/RB2_1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/radio_right_selector"
-            android:button="@null"
-            android:gravity="center"
-            android:paddingHorizontal="20dp"
-            android:text="naam2"
-            android:textColor="@color/black"
-            android:textStyle="bold" />
-    </RadioGroup>
-
-    <RadioGroup
-        android:id="@+id/RG_2"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/dialog_set2"
-        app:layout_constraintTop_toBottomOf="@+id/RG_1">
+        app:layout_constraintStart_toEndOf="@+id/dialog_set1_label"
+        app:layout_constraintTop_toBottomOf="@+id/dialog_subtitle" />
 
-        <RadioButton
-            android:id="@+id/RB_2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/radio_left_selector"
-            android:button="@null"
-            android:checked="true"
-            android:paddingHorizontal="20dp"
-            android:text="naam1"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            android:gravity="center"/>
-
-        <RadioButton
-            android:id="@+id/RB2_2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/radio_right_selector"
-            android:button="@null"
-            android:paddingHorizontal="20dp"
-            android:text="naam2"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            android:gravity="center"/>
-    </RadioGroup>
-
-    <RadioGroup
-        android:id="@+id/RG_3"
-        android:layout_width="0dp"
+    <include
+        android:id="@+id/dialog_set2"
+        layout="@layout/layout_set"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/dialog_set3"
-        app:layout_constraintTop_toBottomOf="@+id/RG_2">
+        app:layout_constraintStart_toEndOf="@+id/dialog_set2_label"
+        app:layout_constraintTop_toBottomOf="@+id/dialog_set1" />
 
-        <RadioButton
-            android:id="@+id/RB_3"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/radio_single"
-            android:button="@null"
-            android:checked="true"
-            android:paddingHorizontal="20dp"
-            android:text="Niemand"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            android:gravity="center"/>
-
-        <RadioButton
-            android:id="@+id/RB2_3"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="@drawable/radio_right_selector"
-            android:button="@null"
-            android:paddingHorizontal="20dp"
-            android:text="naam2"
-            android:textColor="@color/black"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:visibility="gone"/>
-    </RadioGroup>
+    <include
+        android:id="@+id/dialog_set3"
+        layout="@layout/layout_set"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/dialog_set3_label"
+        app:layout_constraintTop_toBottomOf="@+id/dialog_set2" />
 
     <Button
         android:id="@+id/dialog_confirm_btn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:layout_marginBottom="20dp"
         android:backgroundTint="@color/black"
         android:paddingVertical="15dp"
         android:text="Bevestig score"
@@ -227,7 +133,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/RG_3"
+        app:layout_constraintTop_toBottomOf="@+id/dialog_set3"
         app:layout_constraintVertical_bias="0.114" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

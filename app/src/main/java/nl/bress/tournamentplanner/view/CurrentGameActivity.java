@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -21,6 +22,8 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.dao.interfaces.IAuth;
@@ -265,89 +268,22 @@ public class CurrentGameActivity extends AppCompatActivity {
         TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
         TextView dialog_subtitle = dialogView.findViewById(R.id.dialog_subtitle);
 
-        RadioButton rb1 = dialogView.findViewById(R.id.RB_1);
-        RadioButton rb2_1 = dialogView.findViewById(R.id.RB2_1);
-        RadioButton rb2 = dialogView.findViewById(R.id.RB_2);
-        RadioButton rb2_2 = dialogView.findViewById(R.id.RB2_2);
-        RadioButton rb3 = dialogView.findViewById(R.id.RB_3);
-        RadioButton rb2_3 = dialogView.findViewById(R.id.RB2_3);
-
-        RadioGroup rg1 = dialogView.findViewById(R.id.RG_1);
-        RadioGroup rg2 = dialogView.findViewById(R.id.RG_2);
-        RadioGroup rg3 = dialogView.findViewById(R.id.RG_3);
-
         dialog_title.setText("Score invullen voor wedstrijd #" + game.getId());
         dialog_subtitle.setText(game.getPlayer1().getName() + " tegen " + game.getPlayer2().getName() + " in " + game.getField().getName());
 
-        rb1.setText(game.getPlayer1().getName());
-        rb2.setText(game.getPlayer1().getName());
-        rb2_1.setText(game.getPlayer2().getName());
-        rb2_2.setText(game.getPlayer2().getName());
+        EditText set1_player1 = dialogView.findViewById(R.id.dialog_set1).findViewById(R.id.player1_score);
+        EditText set1_player2 = dialogView.findViewById(R.id.dialog_set1).findViewById(R.id.player2_score);
+        EditText set2_player1 = dialogView.findViewById(R.id.dialog_set2).findViewById(R.id.player1_score);
+        EditText set2_player2 = dialogView.findViewById(R.id.dialog_set2).findViewById(R.id.player2_score);
+        EditText set3_player1 = dialogView.findViewById(R.id.dialog_set3).findViewById(R.id.player1_score);
+        EditText set3_player2 = dialogView.findViewById(R.id.dialog_set3).findViewById(R.id.player2_score);
 
-        TextView set3 = dialogView.findViewById(R.id.dialog_set3);
-
-        //Listeners for showing set 3
-        rg1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                if(R.id.RB_1 == i) {
-                    if (rb2.isChecked()) {
-                        rb3.setText("Niemand");
-                        rb3.setChecked(true);
-                        rb3.setBackgroundResource(R.drawable.radio_single);
-                        rb2_3.setVisibility(View.GONE);
-                    } else {
-                        rb3.setText(game.getPlayer1().getName());
-                        rb3.setBackgroundResource(R.drawable.radio_left_selector);
-                        rb2_3.setText(game.getPlayer2().getName());
-                        rb2_3.setVisibility(View.VISIBLE);
-                    }
-                } else if (R.id.RB2_1 == i) {
-                    if(rb2_2.isChecked()) {
-                        rb3.setText("Niemand");
-                        rb3.setChecked(true);
-                        rb3.setBackgroundResource(R.drawable.radio_single);
-                        rb2_3.setVisibility(View.GONE);
-                    } else {
-                        rb3.setText(game.getPlayer1().getName());
-                        rb3.setBackgroundResource(R.drawable.radio_left_selector);
-                        rb2_3.setText(game.getPlayer2().getName());
-                        rb2_3.setVisibility(View.VISIBLE);
-                    }
-                }
-            }
-        });
-
-        rg2.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                if(R.id.RB_2 == i) {
-                    if (rb1.isChecked()) {
-                        rb3.setText("Niemand");
-                        rb3.setChecked(true);
-                        rb3.setBackgroundResource(R.drawable.radio_single);
-                        rb2_3.setVisibility(View.GONE);
-                    } else {
-                        rb3.setText(game.getPlayer1().getName());
-                        rb3.setBackgroundResource(R.drawable.radio_left_selector);
-                        rb2_3.setText(game.getPlayer2().getName());
-                        rb2_3.setVisibility(View.VISIBLE);
-                    }
-                } else if (R.id.RB2_2 == i) {
-                    if(rb2_1.isChecked()) {
-                        rb3.setText("Niemand");
-                        rb3.setChecked(true);
-                        rb3.setBackgroundResource(R.drawable.radio_single);
-                        rb2_3.setVisibility(View.GONE);
-                    } else {
-                        rb3.setText(game.getPlayer1().getName());
-                        rb3.setBackgroundResource(R.drawable.radio_left_selector);
-                        rb2_3.setText(game.getPlayer2().getName());
-                        rb2_3.setVisibility(View.VISIBLE);
-                    }
-                }
-            }
-        });
+        set1_player1.setHint(game.getPlayer1().getName());
+        set2_player1.setHint(game.getPlayer1().getName());
+        set3_player1.setHint(game.getPlayer1().getName());
+        set1_player2.setHint(game.getPlayer2().getName());
+        set2_player2.setHint(game.getPlayer2().getName());
+        set3_player2.setHint(game.getPlayer2().getName());
 
         // Close dialog
         ImageView close_btn = dialogView.findViewById(R.id.dialog_close);
@@ -363,17 +299,22 @@ public class CurrentGameActivity extends AppCompatActivity {
         confirm_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int setsPlayed = 2;
-                if(!(rb1.isChecked() && rb2.isChecked() || rb2_1.isChecked() && rb2_2.isChecked())) {
-                    setsPlayed ++;
+                List<Integer> scoreA = new ArrayList<>();
+                List<Integer> scoreB = new ArrayList<>();
+
+                if(set1_player1.getText().toString().isEmpty() || set1_player2.getText().toString().isEmpty() || set2_player1.getText().toString().isEmpty() || set2_player2.getText().toString().isEmpty()) {
+                    Toast.makeText(CurrentGameActivity.this, "Vul minstens 2 sets in", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    scoreA.add(Integer.parseInt(set1_player1.getText().toString()));
+                    scoreA.add(Integer.parseInt(set2_player1.getText().toString()));
+                    scoreB.add(Integer.parseInt(set1_player2.getText().toString()));
+                    scoreB.add(Integer.parseInt(set2_player2.getText().toString()));
                 }
-                boolean[] score = new boolean[setsPlayed];
 
-                score[0] = rb1.isChecked();
-                score[1] = rb2.isChecked();
-
-                if(score.length > 2) {
-                    score[2] = rb3.isChecked();
+                if(!set3_player1.getText().toString().isEmpty() && !set3_player2.getText().toString().isEmpty()) {
+                    scoreA.add(Integer.parseInt(set3_player1.getText().toString()));
+                    scoreB.add(Integer.parseInt(set3_player2.getText().toString()));
                 }
 
                 new Thread(new Runnable() {
@@ -400,7 +341,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                                 .build();
 
                         IGame service = retrofit.create(IGame.class);
-                        service.addScoreToCurrentGame(prefs.getInt("playerId", 0), game.getId(), new ScoreModel(score)).enqueue(new Callback<Object>() {
+                        service.addScoreToCurrentGame(prefs.getInt("playerId", 0), game.getId(), new ScoreModel(scoreA, scoreB)).enqueue(new Callback<Object>() {
 
                             @Override
                             public void onResponse(Call<Object> call, Response<Object> response) {
