@@ -34,7 +34,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static String BASE_URL = "https://bress-api.azurewebsites.net/api/";
+    public static String BASE_URL = "https://serverbuijsen.nl/api/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
