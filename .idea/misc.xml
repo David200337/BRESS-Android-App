@@ -7,6 +7,8 @@
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/button_enabled.xml" value="0.22135416666666666" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/button_selector.xml" value="0.22135416666666666" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/cell_shape.xml" value="0.22135416666666666" />
+        <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/ic_closedialog.xml" value="0.3828125" />
+        <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/ic_user.xml" value="0.3828125" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/radio_left_selector.xml" value="0.22135416666666666" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/radio_left_switched_false.xml" value="0.22135416666666666" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/radio_left_switched_true.xml" value="0.22135416666666666" />
@@ -21,7 +23,9 @@
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/layout/activity_main.xml" value="0.20520833333333333" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/layout/activity_new_player.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/layout/activity_register.xml" value="0.33" />
+        <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/layout/layout_account_dialog.xml" value="0.33" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/layout/layout_dialog.xml" value="0.33" />
+        <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/layout/layout_set.xml" value="0.36666666666666664" />
       </map>
     </option>
   </component>

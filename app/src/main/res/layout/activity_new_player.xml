@@ -25,7 +25,7 @@
             app:srcCompat="@drawable/logo_bress_orange" />
 
         <TextView
-            android:id="@+id/newPlayer_name_label"
+            android:id="@+id/editPlayer_name_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -37,7 +37,7 @@
             app:layout_constraintTop_toBottomOf="@id/imageView" />
 
         <EditText
-            android:id="@+id/newPlayer_name_input"
+            android:id="@+id/editPlayer_name_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -51,7 +51,7 @@
             android:textSize="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/newPlayer_name_label" />
+            app:layout_constraintTop_toBottomOf="@id/editPlayer_name_label" />
 
         <LinearLayout
             android:id="@+id/spinner_layout"
@@ -60,10 +60,10 @@
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/newPlayer_name_input">
+            app:layout_constraintTop_toBottomOf="@id/editPlayer_name_input">
 
             <TextView
-                android:id="@+id/newPlayer_spinner_label"
+                android:id="@+id/edit_spinner_label"
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -75,7 +75,7 @@
 
             <Spinner
                 android:layout_weight="1"
-                android:id="@+id/newPlayer_spinner"
+                android:id="@+id/edit_spinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp" />
@@ -84,7 +84,7 @@
 
 
         <Button
-            android:id="@+id/newPlayer_bn_confirm"
+            android:id="@+id/editPlayer_bn_confirm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
