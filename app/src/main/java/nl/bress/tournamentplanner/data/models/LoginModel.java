@@ -1,11 +1,9 @@
 package nl.bress.tournamentplanner.data.models;
 
-import okhttp3.RequestBody;
-
 public class LoginModel {
-    public String email;
-    public String password;
-    public String fbtoken;
+    private String email;
+    private String password;
+    private String fbtoken;
 
     public LoginModel(String email, String password, String fbtoken) {
         this.email = email;

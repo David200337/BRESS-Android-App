@@ -36,12 +36,12 @@ public class MainActivity extends AppCompatActivity {
 
     // Utilities
     private SharedPreferences prefs;
-    private SharedPreferences.Editor prefs_editor;
+    private SharedPreferences.Editor prefsEditor;
     private IAuth authService;
 
     // Views
-    private EditText et_email;
-    private EditText et_password;
+    private EditText etEmail;
+    private EditText etPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        prefs_editor = prefs.edit();
+        prefsEditor = prefs.edit();
         authService = ServiceFactory.createAuthService();
 
         // Redirect to CurrentGameActivity if user is logged in
@@ -57,14 +57,14 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
         }
 
-        et_email = findViewById(R.id.login_et_email);
-        et_password = findViewById(R.id.login_et_password);
-        Button bn_confirm = findViewById(R.id.login_bn_confirm);
-        TextView bn_register = findViewById(R.id.register_link);
+        etEmail = findViewById(R.id.login_et_email);
+        etPassword = findViewById(R.id.login_et_password);
+        Button bnConfirm = findViewById(R.id.login_bn_confirm);
+        TextView bnRegister = findViewById(R.id.register_link);
 
-        bn_register.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, RegisterActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
+        bnRegister.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, RegisterActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
 
-        bn_confirm.setOnClickListener(view -> login());
+        bnConfirm.setOnClickListener(view -> login());
     }
 
     public void login() {
@@ -78,15 +78,15 @@ public class MainActivity extends AppCompatActivity {
 
             fbtoken[0] = task.getResult();
 
-            authService.login(new LoginModel(et_email.getText().toString(), et_password.getText().toString(), fbtoken[0])).enqueue(new Callback<LoginResponseWrapper>() {
+            authService.login(new LoginModel(etEmail.getText().toString(), etPassword.getText().toString(), fbtoken[0])).enqueue(new Callback<LoginResponseWrapper>() {
                 @Override
                 public void onResponse(@NonNull Call<LoginResponseWrapper> call, @NonNull Response<LoginResponseWrapper> response) {
                     if(response.body() != null){
-                        LoginResponse loginResponse = response.body().result;
-                        prefs_editor.putString(MainActivity.PREFS_TOKEN, loginResponse.token);
-                        prefs_editor.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.user.id);
-                        prefs_editor.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.user.email);
-                        prefs_editor.apply();
+                        LoginResponse loginResponse = response.body().getResult();
+                        prefsEditor.putString(MainActivity.PREFS_TOKEN, loginResponse.getToken());
+                        prefsEditor.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.getUser().getId());
+                        prefsEditor.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.getUser().getEmail());
+                        prefsEditor.apply();
 
                         startActivity(new Intent(MainActivity.this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                     }

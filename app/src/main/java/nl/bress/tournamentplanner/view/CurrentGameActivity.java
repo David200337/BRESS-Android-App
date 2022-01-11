@@ -17,7 +17,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,7 +47,7 @@ public class CurrentGameActivity extends AppCompatActivity {
 
     // Utilities
     private SharedPreferences prefs;
-    private SharedPreferences.Editor prefs_editor;
+    private SharedPreferences.Editor prefsEditor;
     private IGame gameService;
     private IAuth authService;
     private IPlayer playerService;
@@ -59,16 +58,16 @@ public class CurrentGameActivity extends AppCompatActivity {
     private ConstraintLayout body;
     private ConstraintLayout empty;
     private ConstraintLayout next;
-    private TextView tv_game_title;
-    private TextView tv_game_player1;
-    private TextView tv_game_player2;
-    private TextView tv_game_field;
-    private TextView tv_nextgame_title;
-    private TextView tv_nextgame_player1;
-    private TextView tv_nextgame_player2;
+    private TextView tvGameTitle;
+    private TextView tvGamePlayer1;
+    private TextView tvGamePlayer2;
+    private TextView tvGameField;
+    private TextView tvNextGameTitle;
+    private TextView tvNextGamePlayer1;
+    private TextView tvNextGamePlayer2;
 
     //Data
-    private ArrayAdapter skillLevelsAdapter;
+    private ArrayAdapter<String> skillLevelsAdapter;
     private SkillLevel[] skillLevels;
     private List<String> skillLevelNames;
     private Player player;
@@ -82,7 +81,7 @@ public class CurrentGameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_current_game);
 
         prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
-        prefs_editor = prefs.edit();
+        prefsEditor = prefs.edit();
         String token = prefs.getString(MainActivity.PREFS_TOKEN, "");
         authService = ServiceFactory.createAuthService();
         gameService = ServiceFactory.createGameService(token);
@@ -94,7 +93,7 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         swipeRefreshLayout = findViewById(R.id.current_game_srl);
 
-        ImageView iv_refresh = findViewById(R.id.current_game_iv_refresh);
+        ImageView ivAccount = findViewById(R.id.current_game_iv_refresh);
 
         body = findViewById(R.id.current_game_cl_body);
         empty = findViewById(R.id.current_game_cl_nogame);
@@ -104,16 +103,16 @@ public class CurrentGameActivity extends AppCompatActivity {
         body.setVisibility(View.GONE);
         empty.setVisibility(View.VISIBLE);
 
-        tv_nextgame_title = findViewById(R.id.next_game_tv_game_title);
-        tv_nextgame_player1 = findViewById(R.id.next_game_tv_player1);
-        tv_nextgame_player2 = findViewById(R.id.next_game_tv_player2);
+        tvNextGameTitle = findViewById(R.id.next_game_tv_game_title);
+        tvNextGamePlayer1 = findViewById(R.id.next_game_tv_player1);
+        tvNextGamePlayer2 = findViewById(R.id.next_game_tv_player2);
 
-        tv_game_title = findViewById(R.id.current_game_tv_game_title);
-        tv_game_player1 = findViewById(R.id.current_game_tv_player1);
-        tv_game_player2 = findViewById(R.id.current_game_tv_player2);
-        tv_game_field = findViewById(R.id.current_game_tv_field);
-        Button btn_game_score = findViewById(R.id.current_game_bn_score);
-        btn_game_score.setOnClickListener(view -> openDialog());
+        tvGameTitle = findViewById(R.id.current_game_tv_game_title);
+        tvGamePlayer1 = findViewById(R.id.current_game_tv_player1);
+        tvGamePlayer2 = findViewById(R.id.current_game_tv_player2);
+        tvGameField = findViewById(R.id.current_game_tv_field);
+        Button btnGameScore = findViewById(R.id.current_game_bn_score);
+        btnGameScore.setOnClickListener(view -> openDialog());
 
         getData();
 
@@ -122,10 +121,10 @@ public class CurrentGameActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<Object> call, @NonNull Response<Object> response) {
                 if(response.body() != null){
-                    prefs_editor.remove(MainActivity.PREFS_TOKEN);
-                    prefs_editor.remove(MainActivity.PREFS_PLAYER_ID);
-                    prefs_editor.remove(MainActivity.PREFS_PLAYER_EMAIL);
-                    prefs_editor.apply();
+                    prefsEditor.remove(MainActivity.PREFS_TOKEN);
+                    prefsEditor.remove(MainActivity.PREFS_PLAYER_ID);
+                    prefsEditor.remove(MainActivity.PREFS_PLAYER_EMAIL);
+                    prefsEditor.apply();
                     startActivity(new Intent(CurrentGameActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                 }
             }
@@ -137,7 +136,7 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         swipeRefreshLayout.setOnRefreshListener(this::getData);
 
-        iv_refresh.setOnClickListener(view -> openAccountDialog());
+        ivAccount.setOnClickListener(view -> openAccountDialog());
     }
 
     private void getSkillLevels() {
@@ -151,7 +150,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                     for(SkillLevel sl : skillLevels) {
                         skillLevelNames.add(sl.getName());
                     }
-                    skillLevelsAdapter = new ArrayAdapter(CurrentGameActivity.this, R.layout.support_simple_spinner_dropdown_item, skillLevelNames);
+                    skillLevelsAdapter = new ArrayAdapter<>(CurrentGameActivity.this, R.layout.support_simple_spinner_dropdown_item, skillLevelNames);
                 }
             }
             @Override
@@ -187,12 +186,12 @@ public class CurrentGameActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<GameResponseWrapper> call, @NonNull Response<GameResponseWrapper> response) {
                 if(response.body() != null){
-                    currentGame = response.body().result;
+                    currentGame = response.body().getResult();
                     if(currentGame != null){
-                        tv_game_title.setText("Wedstrijd #" + currentGame.getId());
-                        tv_game_player1.setText(currentGame.getPlayer1().getName());
-                        tv_game_player2.setText(currentGame.getPlayer2().getName());
-                        tv_game_field.setText(currentGame.getField().getName());
+                        tvGameTitle.setText("Wedstrijd #" + currentGame.getId());
+                        tvGamePlayer1.setText(currentGame.getPlayer1().getName());
+                        tvGamePlayer2.setText(currentGame.getPlayer2().getName());
+                        tvGameField.setText(currentGame.getField().getName());
 
                         empty.setVisibility(View.GONE);
                         body.setVisibility(View.VISIBLE);
@@ -212,11 +211,11 @@ public class CurrentGameActivity extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call<GameResponseWrapper> call, @NonNull Response<GameResponseWrapper> response) {
                 if(response.body() != null){
-                    nextGame = response.body().result;
+                    nextGame = response.body().getResult();
                     if(nextGame != null){
-                        tv_nextgame_title.setText("Wedstrijd #" + nextGame.getId());
-                        tv_nextgame_player1.setText(nextGame.getPlayer1().getName());
-                        tv_nextgame_player2.setText(nextGame.getPlayer2().getName());
+                        tvNextGameTitle.setText("Wedstrijd #" + nextGame.getId());
+                        tvNextGamePlayer1.setText(nextGame.getPlayer1().getName());
+                        tvNextGamePlayer2.setText(nextGame.getPlayer2().getName());
 
                         empty.setVisibility(View.GONE);
                         next.setVisibility(View.VISIBLE);

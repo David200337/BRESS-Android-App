@@ -33,12 +33,12 @@ public class RegisterActivity extends AppCompatActivity {
     public static final String INTENT_EMAIL = "email";
     public static final String INTENT_PASS = "pass";
 
-    private SharedPreferences.Editor prefs_editor;
+    private SharedPreferences.Editor prefsEditor;
     private IAuth authService;
 
     // Views
-    private EditText email_input;
-    private EditText password_input;
+    private EditText emailInput;
+    private EditText passwordInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,34 +47,34 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Utilities
         SharedPreferences prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
-        prefs_editor = prefs.edit();
+        prefsEditor = prefs.edit();
         authService = ServiceFactory.createAuthService();
 
-        email_input = findViewById(R.id.register_email_input);
-        password_input = findViewById(R.id.register_password_input);
-        EditText confirm_password_input = findViewById(R.id.register_confirm_password_input);
-        Button confirm_button = findViewById(R.id.register_bn_confirm);
-        TextView login_page = findViewById(R.id.register_link);
+        emailInput = findViewById(R.id.register_email_input);
+        passwordInput = findViewById(R.id.register_password_input);
+        EditText confirmPasswordInput = findViewById(R.id.register_confirm_password_input);
+        Button confirmButton = findViewById(R.id.register_bn_confirm);
+        TextView loginPage = findViewById(R.id.register_link);
 
         // Validate (with listeners)
-        email_input.addTextChangedListener(new TextChangedListener(getWindow().getDecorView().getRootView()));
-        confirm_password_input.addTextChangedListener(new TextChangedListener(getWindow().getDecorView().getRootView()));
-        password_input.addTextChangedListener(new TextChangedListener(getWindow().getDecorView().getRootView()));
+        emailInput.addTextChangedListener(new TextChangedListener(getWindow().getDecorView().getRootView()));
+        confirmPasswordInput.addTextChangedListener(new TextChangedListener(getWindow().getDecorView().getRootView()));
+        passwordInput.addTextChangedListener(new TextChangedListener(getWindow().getDecorView().getRootView()));
 
         // Button actions
-        login_page.setOnClickListener(view -> startActivity(new Intent(RegisterActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
+        loginPage.setOnClickListener(view -> startActivity(new Intent(RegisterActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
 
-        confirm_button.setOnClickListener(view -> authService.register(new RegisterModel(email_input.getText().toString().toLowerCase(), password_input.getText().toString())).enqueue(new Callback<RegisterResponseWrapper>() {
+        confirmButton.setOnClickListener(view -> authService.register(new RegisterModel(emailInput.getText().toString().toLowerCase(), passwordInput.getText().toString())).enqueue(new Callback<RegisterResponseWrapper>() {
             @Override
             public void onResponse(@NonNull Call<RegisterResponseWrapper> call, @NonNull Response<RegisterResponseWrapper> response) {
                 if(response.body() != null){
                     if(response.body().getResult().playerExists()) {
                         login();
                     } else {
-                        prefs_editor.putString(MainActivity.PREFS_TOKEN, response.body().getResult().getToken());
-                        prefs_editor.apply();
+                        prefsEditor.putString(MainActivity.PREFS_TOKEN, response.body().getResult().getToken());
+                        prefsEditor.apply();
 
-                        startActivity(new Intent(RegisterActivity.this, NewPlayerActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP).putExtra(INTENT_EMAIL, email_input.getText().toString().toLowerCase()).putExtra(INTENT_PASS, password_input.getText().toString()));
+                        startActivity(new Intent(RegisterActivity.this, NewPlayerActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP).putExtra(INTENT_EMAIL, emailInput.getText().toString().toLowerCase()).putExtra(INTENT_PASS, passwordInput.getText().toString()));
                         finish();
                     }
                 }
@@ -96,15 +96,15 @@ public class RegisterActivity extends AppCompatActivity {
             final String[] fbtoken = {null};
             fbtoken[0] = task.getResult();
 
-            authService.login(new LoginModel(email_input.getText().toString(), password_input.getText().toString(), fbtoken[0])).enqueue(new Callback<LoginResponseWrapper>() {
+            authService.login(new LoginModel(emailInput.getText().toString(), passwordInput.getText().toString(), fbtoken[0])).enqueue(new Callback<LoginResponseWrapper>() {
                 @Override
                 public void onResponse(@NonNull Call<LoginResponseWrapper> call, @NonNull Response<LoginResponseWrapper> response) {
                     if(response.body() != null){
-                        LoginResponse loginResponse = response.body().result;
-                        prefs_editor.putString(MainActivity.PREFS_TOKEN, loginResponse.token);
-                        prefs_editor.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.user.id);
-                        prefs_editor.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.user.email);
-                        prefs_editor.apply();
+                        LoginResponse loginResponse = response.body().getResult();
+                        prefsEditor.putString(MainActivity.PREFS_TOKEN, loginResponse.getToken());
+                        prefsEditor.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.getUser().getId());
+                        prefsEditor.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.getUser().getEmail());
+                        prefsEditor.apply();
 
                         startActivity(new Intent(RegisterActivity.this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                         finish();

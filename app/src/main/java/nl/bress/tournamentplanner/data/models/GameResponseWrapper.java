@@ -3,7 +3,7 @@ package nl.bress.tournamentplanner.data.models;
 import nl.bress.tournamentplanner.domain.Game;
 
 public class GameResponseWrapper {
-    public Game result;
+    private Game result;
 
     public GameResponseWrapper(Game result) {
         this.result = result;
