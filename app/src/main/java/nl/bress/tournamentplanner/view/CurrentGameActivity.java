@@ -1,5 +1,7 @@
 package nl.bress.tournamentplanner.view;
 
+import static nl.bress.tournamentplanner.view.MainActivity.BASE_URL;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -9,13 +11,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,12 +34,15 @@ import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.dao.interfaces.IAuth;
 import nl.bress.tournamentplanner.dao.interfaces.IGame;
 import nl.bress.tournamentplanner.dao.interfaces.IPlayer;
+import nl.bress.tournamentplanner.dao.interfaces.ISkillLevel;
 import nl.bress.tournamentplanner.domain.Game;
 import nl.bress.tournamentplanner.domain.GameResponseWrapper;
 import nl.bress.tournamentplanner.domain.LogoutModel;
 import nl.bress.tournamentplanner.domain.Player;
 import nl.bress.tournamentplanner.domain.PlayerResponseWrapper;
 import nl.bress.tournamentplanner.domain.ScoreModel;
+import nl.bress.tournamentplanner.domain.SkillLevel;
+import nl.bress.tournamentplanner.domain.SkillLevelResponseWrapper;
 import nl.bress.tournamentplanner.domain.UpdatePlayerModel;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -64,6 +72,11 @@ public class CurrentGameActivity extends AppCompatActivity {
     private TextView tv_nextgame_title;
     private TextView tv_nextgame_player1;
     private TextView tv_nextgame_player2;
+    private ArrayAdapter aa;
+    private SkillLevel[] skillLevels;
+    private List<String> skillLevelNames;
+    private Player player;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +85,11 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         prefs = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
         token = prefs.getString("token", "");
+
+        skillLevelNames = new ArrayList<>();
+
+        getSkillLevels();
+        getPlayer();
 
         swipeRefreshLayout = findViewById(R.id.current_game_srl);
 
@@ -114,7 +132,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Retrofit retrofit = new Retrofit.Builder()
-                                .baseUrl(MainActivity.BASE_URL)
+                                .baseUrl(BASE_URL)
                                 .addConverterFactory(GsonConverterFactory.create())
                                 .build();
 
@@ -160,6 +178,101 @@ public class CurrentGameActivity extends AppCompatActivity {
         });
     }
 
+
+    private void getSkillLevels() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Interceptor interceptor = new Interceptor() {
+                    @Override
+                    public okhttp3.Response intercept(Chain chain) throws IOException {
+                        Request newRequest = chain.request().newBuilder()
+                                .addHeader("Accept", "application/json")
+                                .addHeader("authorization", "Bearer " + token)
+                                .build();
+                        return chain.proceed(newRequest);
+                    }
+                };
+                OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
+                okHttpBuilder.addInterceptor(interceptor);
+                OkHttpClient okHttpClient = okHttpBuilder.build();
+
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl(BASE_URL)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .client(okHttpClient)
+                        .build();
+                ISkillLevel skillLevelService = retrofit.create(ISkillLevel.class);
+
+                skillLevelService.getAllSkillLevels().enqueue(new Callback<SkillLevelResponseWrapper>() {
+                    @Override
+                    public void onResponse(Call<SkillLevelResponseWrapper> call, Response<SkillLevelResponseWrapper> response) {
+                        Log.d("test", " " + response.body());
+                        if(response.body() != null) {
+                            skillLevels = response.body().getResult();
+
+                            for(SkillLevel sl : skillLevels) {
+                                skillLevelNames.add(sl.getName());
+                            }
+                            aa = new ArrayAdapter(CurrentGameActivity.this, R.layout.support_simple_spinner_dropdown_item, skillLevelNames);
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<SkillLevelResponseWrapper> call, Throwable t) {
+                        Log.d("test", "onResponse: ");
+                    }
+                });
+            }
+        }).start();
+    }
+
+    private void getPlayer() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Interceptor interceptor = new Interceptor() {
+                    @Override
+                    public okhttp3.Response intercept(Chain chain) throws IOException {
+                        Request newRequest = chain.request().newBuilder()
+                                .addHeader("Accept", "application/json")
+                                .addHeader("authorization", "Bearer " + token)
+                                .build();
+                        return chain.proceed(newRequest);
+                    }
+                };
+                OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
+                okHttpBuilder.addInterceptor(interceptor);
+                OkHttpClient okHttpClient = okHttpBuilder.build();
+
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl(BASE_URL)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .client(okHttpClient)
+                        .build();
+
+                IPlayer playerService = retrofit.create(IPlayer.class);
+
+                playerService.getPlayerById(prefs.getInt("playerId", 0)).enqueue(new Callback<PlayerResponseWrapper>() {
+                    @Override
+                    public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
+
+                        if(response.body() != null) {
+                            Player result = response.body().getResult();
+                            player = result;
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
+
+                    }
+                });
+            }
+        }).start();
+    }
+
     private void getData(){
         swipeRefreshLayout.setRefreshing(true);
         empty.setVisibility(View.VISIBLE);
@@ -184,7 +297,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                 OkHttpClient okHttpClient = okHttpBuilder.build();
 
                 Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(MainActivity.BASE_URL)
+                        .baseUrl(BASE_URL)
                         .addConverterFactory(GsonConverterFactory.create())
                         .client(okHttpClient)
                         .build();
@@ -261,14 +374,17 @@ public class CurrentGameActivity extends AppCompatActivity {
 
     public void openAccountDialog() {
         // Prepare dialog
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.layout_account_dialog, null);
+        View accountDialogView = LayoutInflater.from(this).inflate(R.layout.layout_account_dialog, null);
         AlertDialog accountDialog = new AlertDialog.Builder(this)
-                .setView(dialogView)
+                .setView(accountDialogView)
                 .create();
         accountDialog.show();
 
+        Spinner spinner = accountDialogView.findViewById(R.id.edit_spinner);
+        spinner.setAdapter(aa);
+
         // Close dialog
-        ImageView close_btn = dialogView.findViewById(R.id.dialog_close);
+        ImageView close_btn = accountDialogView.findViewById(R.id.dialog_close);
         close_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -276,10 +392,15 @@ public class CurrentGameActivity extends AppCompatActivity {
             }
         });
 
-        Button confirm_bn = dialogView.findViewById(R.id.editPlayer_bn_confirm);
+        String token = prefs.getString("token", "");
+
+        Button confirm_bn = accountDialogView.findViewById(R.id.editPlayer_bn_confirm);
+        EditText name_input = accountDialogView.findViewById(R.id.editPlayer_name_input);
+        name_input.setText(player.getName());
         confirm_bn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -298,25 +419,21 @@ public class CurrentGameActivity extends AppCompatActivity {
                         OkHttpClient okHttpClient = okHttpBuilder.build();
 
                         Retrofit retrofit = new Retrofit.Builder()
-                                .baseUrl(MainActivity.BASE_URL)
+                                .baseUrl(BASE_URL)
                                 .addConverterFactory(GsonConverterFactory.create())
                                 .client(okHttpClient)
                                 .build();
 
                         IPlayer service = retrofit.create(IPlayer.class);
-                        String json = prefs.getString("player", "");
-                        Gson gson = new Gson();
-                        Player player = gson.fromJson(json, Player.class);
+                        SkillLevel selectedSkillLevel = skillLevels[spinner.getSelectedItemPosition()];
 
-                        service.updatePlayer(player.getId(), new UpdatePlayerModel(player.getName(), player.getSkillLevel().getId())).enqueue(new Callback<PlayerResponseWrapper>() {
+                        service.updatePlayer(player.getId(), new UpdatePlayerModel(name_input.getText().toString(), selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
                             @Override
                             public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
+
                                 if (response.body() != null) {
                                     Player updated = response.body().getResult();
-                                    SharedPreferences.Editor edit = prefs.edit();
-                                    String json = gson.toJson(updated, Player.class);
-                                    edit.putString("player", json);
-                                    edit.apply();
+                                    player = updated;
                                     accountDialog.dismiss();
                                 }
                             }
@@ -327,7 +444,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                             }
                         });
                     }
-                });
+                }).start();
             }
         });
 
@@ -414,7 +531,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                         OkHttpClient okHttpClient = okHttpBuilder.build();
 
                         Retrofit retrofit = new Retrofit.Builder()
-                                .baseUrl(MainActivity.BASE_URL)
+                                .baseUrl(BASE_URL)
                                 .addConverterFactory(GsonConverterFactory.create())
                                 .client(okHttpClient)
                                 .build();
