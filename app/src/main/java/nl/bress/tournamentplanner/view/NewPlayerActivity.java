@@ -26,7 +26,6 @@ import java.util.List;
 
 import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.dao.interfaces.IAuth;
-import nl.bress.tournamentplanner.dao.interfaces.IGame;
 import nl.bress.tournamentplanner.dao.interfaces.IPlayer;
 import nl.bress.tournamentplanner.dao.interfaces.ISkillLevel;
 import nl.bress.tournamentplanner.domain.LoginModel;
@@ -34,7 +33,6 @@ import nl.bress.tournamentplanner.domain.LoginResponse;
 import nl.bress.tournamentplanner.domain.LoginResponseWrapper;
 import nl.bress.tournamentplanner.domain.NewPlayerModel;
 import nl.bress.tournamentplanner.domain.PlayerResponseWrapper;
-import nl.bress.tournamentplanner.domain.ScoreModel;
 import nl.bress.tournamentplanner.domain.SkillLevel;
 import nl.bress.tournamentplanner.domain.SkillLevelResponseWrapper;
 import okhttp3.Interceptor;
@@ -70,9 +68,9 @@ public class NewPlayerActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
         skillLevelNames = new ArrayList<>();
         String token = prefs.getString("token", "");
-        spinner = findViewById(R.id.newPlayer_spinner);
-        Button confirm_btn = findViewById(R.id.newPlayer_bn_confirm);
-        EditText name_input = findViewById(R.id.newPlayer_name_input);
+        spinner = findViewById(R.id.edit_spinner);
+        Button confirm_btn = findViewById(R.id.editPlayer_bn_confirm);
+        EditText name_input = findViewById(R.id.editPlayer_name_input);
 
         new Thread(new Runnable() {
             @Override
