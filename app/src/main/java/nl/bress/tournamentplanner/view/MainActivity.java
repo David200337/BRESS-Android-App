@@ -7,135 +7,104 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.gson.Gson;
-
-import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Text;
-
-import java.io.IOException;
 
 import nl.bress.tournamentplanner.R;
-import nl.bress.tournamentplanner.dao.interfaces.IAuth;
-import nl.bress.tournamentplanner.dao.interfaces.IPlayer;
-import nl.bress.tournamentplanner.dao.interfaces.ISkillLevel;
-import nl.bress.tournamentplanner.domain.LoginModel;
-import nl.bress.tournamentplanner.domain.LoginResponse;
-import nl.bress.tournamentplanner.domain.LoginResponseWrapper;
+import nl.bress.tournamentplanner.data.factory.ServiceFactory;
+import nl.bress.tournamentplanner.data.services.IAuth;
+import nl.bress.tournamentplanner.data.models.LoginModel;
+import nl.bress.tournamentplanner.data.models.LoginResponse;
+import nl.bress.tournamentplanner.data.models.LoginResponseWrapper;
 
-import nl.bress.tournamentplanner.domain.Player;
-import nl.bress.tournamentplanner.domain.PlayerResponseWrapper;
-import nl.bress.tournamentplanner.domain.SkillLevelResponseWrapper;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static String BASE_URL = "https://serverbuijsen.nl/api/";
+    // Constants
+    public static final String BASE_URL = "https://serverbuijsen.nl/api/";
+    public static final String PREFS_NAME = "myPrefs";
+    public static final String PREFS_TOKEN = "token";
+    public static final String PREFS_PLAYER_ID = "playerId";
+    public static final String PREFS_PLAYER_EMAIL = "playerEmail";
+
+    // Utilities
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor prefs_editor;
+    private IAuth authService;
+
+    // Views
+    private EditText et_email;
+    private EditText et_password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("test", "mainstarted: ");
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SharedPreferences prefs = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
+        prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        prefs_editor = prefs.edit();
+        authService = ServiceFactory.createAuthService();
 
-        if(!prefs.getString("token", "").equals("")){
+        // Redirect to CurrentGameActivity if user is logged in
+        if(!prefs.getString(PREFS_TOKEN, "").equals("")){
             startActivity(new Intent(this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
         }
 
-        EditText et_email = findViewById(R.id.login_et_email);
-        EditText et_password = findViewById(R.id.login_et_password);
+        et_email = findViewById(R.id.login_et_email);
+        et_password = findViewById(R.id.login_et_password);
         Button bn_confirm = findViewById(R.id.login_bn_confirm);
         TextView bn_register = findViewById(R.id.register_link);
 
-        bn_register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, RegisterActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        bn_register.setOnClickListener(view -> startActivity(new Intent(MainActivity.this, RegisterActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
+
+        bn_confirm.setOnClickListener(view -> login());
+    }
+
+    public void login() {
+        final String[] fbtoken = {null};
+
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Toast.makeText(MainActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                return;
             }
-        });
 
-        bn_confirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        final String[] fbtoken = {null};
+            fbtoken[0] = task.getResult();
 
-                        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
-                            @Override
-                            public void onComplete(@NonNull @NotNull Task<String> task) {
-                                if (!task.isSuccessful()) {
-                                    Toast.makeText(MainActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                                    return;
-                                }
+            authService.login(new LoginModel(et_email.getText().toString(), et_password.getText().toString(), fbtoken[0])).enqueue(new Callback<LoginResponseWrapper>() {
+                @Override
+                public void onResponse(@NonNull Call<LoginResponseWrapper> call, @NonNull Response<LoginResponseWrapper> response) {
+                    if(response.body() != null){
+                        LoginResponse loginResponse = response.body().result;
+                        prefs_editor.putString(MainActivity.PREFS_TOKEN, loginResponse.token);
+                        prefs_editor.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.user.id);
+                        prefs_editor.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.user.email);
+                        prefs_editor.apply();
 
-                                fbtoken[0] = task.getResult();
-
-                                Retrofit retrofit = new Retrofit.Builder()
-                                        .baseUrl(BASE_URL)
-                                        .addConverterFactory(GsonConverterFactory.create())
-                                        .build();
-
-                                IAuth service = retrofit.create(IAuth.class);
-                                ISkillLevel skillLevelService = retrofit.create(ISkillLevel.class);
-
-                                Log.d("test", "player11: ");
-
-                                service.login(new LoginModel(et_email.getText().toString(), et_password.getText().toString(), fbtoken[0])).enqueue(new Callback<LoginResponseWrapper>() {
-                                    @Override
-                                    public void onResponse(Call<LoginResponseWrapper> call, Response<LoginResponseWrapper> response) {
-                                        if(response.body() != null){
-                                            LoginResponse loginResponse = response.body().result;
-                                            SharedPreferences.Editor edit = prefs.edit();
-                                            edit.putString("token", loginResponse.token);
-                                            edit.putInt("playerId", loginResponse.user.id);
-                                            edit.putString("playerEmail", loginResponse.user.email);
-                                            edit.apply();
-
-                                            startActivity(new Intent(MainActivity.this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<LoginResponseWrapper> call, Throwable t) {
-                                        Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
-                        });
+                        startActivity(new Intent(MainActivity.this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                     }
-                }).start();
-            }
-        });
+                }
 
+                @Override
+                public void onFailure(@NonNull Call<LoginResponseWrapper> call, @NonNull Throwable t) {
+                    Toast.makeText(MainActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        SharedPreferences prefs = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
 
-        if(!prefs.getString("token", "").equals("")){
+        if(!prefs.getString(MainActivity.PREFS_TOKEN, "").equals("")){
             startActivity(new Intent(this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
         }
     }

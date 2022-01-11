@@ -1,13 +1,12 @@
-package nl.bress.tournamentplanner.dao.interfaces;
+package nl.bress.tournamentplanner.data.services;
 
-import nl.bress.tournamentplanner.domain.LoginModel;
-import nl.bress.tournamentplanner.domain.LoginResponseWrapper;
-import nl.bress.tournamentplanner.domain.LogoutModel;
-import nl.bress.tournamentplanner.domain.RegisterModel;
-import nl.bress.tournamentplanner.domain.RegisterResponseWrapper;
+import nl.bress.tournamentplanner.data.models.LoginModel;
+import nl.bress.tournamentplanner.data.models.LoginResponseWrapper;
+import nl.bress.tournamentplanner.data.models.LogoutModel;
+import nl.bress.tournamentplanner.data.models.RegisterModel;
+import nl.bress.tournamentplanner.data.models.RegisterResponseWrapper;
 import retrofit2.Call;
 import retrofit2.http.Body;
-import retrofit2.http.DELETE;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;

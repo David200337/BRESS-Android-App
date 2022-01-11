@@ -1,4 +1,4 @@
-package nl.bress.tournamentplanner.domain;
+package nl.bress.tournamentplanner.data.models;
 
 public class LoginResponseWrapper {
     public LoginResponse result;

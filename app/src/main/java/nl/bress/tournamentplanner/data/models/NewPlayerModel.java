@@ -1,11 +1,13 @@
-package nl.bress.tournamentplanner.domain;
+package nl.bress.tournamentplanner.data.models;
 
-public class UpdatePlayerModel {
+public class NewPlayerModel {
     private String name;
+    private String email;
     private int skillLevelId;
 
-    public UpdatePlayerModel(String name, int skillLevelId) {
+    public NewPlayerModel(String name, String email, int skillLevelId) {
         this.name = name;
+        this.email = email;
         this.skillLevelId = skillLevelId;
     }
 
@@ -15,6 +17,14 @@ public class UpdatePlayerModel {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public int getSkillLevelId() {
