@@ -1,11 +1,8 @@
-package nl.bress.tournamentplanner.dao.interfaces;
+package nl.bress.tournamentplanner.data.services;
 
-import nl.bress.tournamentplanner.domain.NewPlayerModel;
-import nl.bress.tournamentplanner.domain.Player;
-import nl.bress.tournamentplanner.domain.PlayerResponseWrapper;
-import nl.bress.tournamentplanner.domain.RegisterModel;
-import nl.bress.tournamentplanner.domain.RegisterResponseWrapper;
-import nl.bress.tournamentplanner.domain.UpdatePlayerModel;
+import nl.bress.tournamentplanner.data.models.NewPlayerModel;
+import nl.bress.tournamentplanner.data.models.PlayerResponseWrapper;
+import nl.bress.tournamentplanner.data.models.UpdatePlayerModel;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;

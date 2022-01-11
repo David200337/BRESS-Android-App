@@ -1,4 +1,6 @@
-package nl.bress.tournamentplanner.domain;
+package nl.bress.tournamentplanner.data.models;
+
+import nl.bress.tournamentplanner.domain.User;
 
 public class LoginResponse {
     public String token;

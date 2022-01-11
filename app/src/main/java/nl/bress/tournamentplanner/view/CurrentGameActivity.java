@@ -18,8 +18,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,19 +29,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.bress.tournamentplanner.R;
-import nl.bress.tournamentplanner.dao.interfaces.IAuth;
-import nl.bress.tournamentplanner.dao.interfaces.IGame;
-import nl.bress.tournamentplanner.dao.interfaces.IPlayer;
-import nl.bress.tournamentplanner.dao.interfaces.ISkillLevel;
+import nl.bress.tournamentplanner.data.factory.ServiceFactory;
+import nl.bress.tournamentplanner.data.services.IAuth;
+import nl.bress.tournamentplanner.data.services.IGame;
+import nl.bress.tournamentplanner.data.services.IPlayer;
+import nl.bress.tournamentplanner.data.services.ISkillLevel;
 import nl.bress.tournamentplanner.domain.Game;
-import nl.bress.tournamentplanner.domain.GameResponseWrapper;
-import nl.bress.tournamentplanner.domain.LogoutModel;
+import nl.bress.tournamentplanner.data.models.GameResponseWrapper;
+import nl.bress.tournamentplanner.data.models.LogoutModel;
 import nl.bress.tournamentplanner.domain.Player;
-import nl.bress.tournamentplanner.domain.PlayerResponseWrapper;
-import nl.bress.tournamentplanner.domain.ScoreModel;
+import nl.bress.tournamentplanner.data.models.PlayerResponseWrapper;
+import nl.bress.tournamentplanner.data.models.ScoreModel;
 import nl.bress.tournamentplanner.domain.SkillLevel;
-import nl.bress.tournamentplanner.domain.SkillLevelResponseWrapper;
-import nl.bress.tournamentplanner.domain.UpdatePlayerModel;
+import nl.bress.tournamentplanner.data.models.SkillLevelResponseWrapper;
+import nl.bress.tournamentplanner.data.models.UpdatePlayerModel;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -54,28 +53,40 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CurrentGameActivity extends AppCompatActivity {
+    // Constants
+    public static final String TAG = CurrentGameActivity.class.getSimpleName();
+
+    // Utilities
     private SharedPreferences prefs;
+    private SharedPreferences.Editor prefs_editor;
+    private Gson gson;
     private String token;
+    private IAuth authService;
+    private IGame gameService;
+    private IPlayer playerService;
+    private ISkillLevel skillLevelService;
+
+    // Views
     private SwipeRefreshLayout swipeRefreshLayout;
     private ConstraintLayout body;
     private ConstraintLayout empty;
     private ConstraintLayout next;
-
     private ImageView iv_refresh;
-
     private TextView tv_game_title;
     private TextView tv_game_player1;
     private TextView tv_game_player2;
     private TextView tv_game_field;
-    private Button btn_game_score;
-
     private TextView tv_nextgame_title;
     private TextView tv_nextgame_player1;
     private TextView tv_nextgame_player2;
-    private ArrayAdapter aa;
+
+    //Data
+    private ArrayAdapter skillLevelsAdapter;
     private SkillLevel[] skillLevels;
     private List<String> skillLevelNames;
     private Player player;
+    private Game currentGame;
+    private Game nextGame;
 
 
     @Override
@@ -83,10 +94,14 @@ public class CurrentGameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_game);
 
-        prefs = getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
-        token = prefs.getString("token", "");
-
-        skillLevelNames = new ArrayList<>();
+        prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
+        prefs_editor = prefs.edit();
+        gson = new Gson();
+        token = prefs.getString(MainActivity.PREFS_TOKEN, "");
+        authService = ServiceFactory.createAuthService();
+        gameService = ServiceFactory.createGameService(token);
+        playerService = ServiceFactory.createPlayerService(token);
+        skillLevelService = ServiceFactory.createSkillLevelService(token);
 
         getSkillLevels();
         getPlayer();
@@ -143,11 +158,10 @@ public class CurrentGameActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(Call<Object> call, Response<Object> response) {
                                 if(response.body() != null){
-                                    SharedPreferences.Editor edit = prefs.edit();
-                                    edit.remove("token");
-                                    edit.remove("playerId");
-                                    edit.remove("playerEmail");
-                                    edit.apply();
+                                    prefs_editor.remove(MainActivity.PREFS_TOKEN);
+                                    prefs_editor.remove(MainActivity.PREFS_PLAYER_ID);
+                                    prefs_editor.remove(MainActivity.PREFS_PLAYER_EMAIL);
+                                    prefs_editor.apply();
 
                                     startActivity(new Intent(CurrentGameActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                                 }
@@ -178,99 +192,41 @@ public class CurrentGameActivity extends AppCompatActivity {
         });
     }
 
-
     private void getSkillLevels() {
-        new Thread(new Runnable() {
+        skillLevelService.getAllSkillLevels().enqueue(new Callback<SkillLevelResponseWrapper>() {
             @Override
-            public void run() {
-                Interceptor interceptor = new Interceptor() {
-                    @Override
-                    public okhttp3.Response intercept(Chain chain) throws IOException {
-                        Request newRequest = chain.request().newBuilder()
-                                .addHeader("Accept", "application/json")
-                                .addHeader("authorization", "Bearer " + token)
-                                .build();
-                        return chain.proceed(newRequest);
+            public void onResponse(Call<SkillLevelResponseWrapper> call, Response<SkillLevelResponseWrapper> response) {
+                if(response.body() != null) {
+                    skillLevels = response.body().getResult();
+
+                    skillLevelNames = new ArrayList<>();
+                    for(SkillLevel sl : skillLevels) {
+                        skillLevelNames.add(sl.getName());
                     }
-                };
-                OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
-                okHttpBuilder.addInterceptor(interceptor);
-                OkHttpClient okHttpClient = okHttpBuilder.build();
-
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(BASE_URL)
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .client(okHttpClient)
-                        .build();
-                ISkillLevel skillLevelService = retrofit.create(ISkillLevel.class);
-
-                skillLevelService.getAllSkillLevels().enqueue(new Callback<SkillLevelResponseWrapper>() {
-                    @Override
-                    public void onResponse(Call<SkillLevelResponseWrapper> call, Response<SkillLevelResponseWrapper> response) {
-                        Log.d("test", " " + response.body());
-                        if(response.body() != null) {
-                            skillLevels = response.body().getResult();
-
-                            for(SkillLevel sl : skillLevels) {
-                                skillLevelNames.add(sl.getName());
-                            }
-                            aa = new ArrayAdapter(CurrentGameActivity.this, R.layout.support_simple_spinner_dropdown_item, skillLevelNames);
-                        }
-
-                    }
-
-                    @Override
-                    public void onFailure(Call<SkillLevelResponseWrapper> call, Throwable t) {
-                        Log.d("test", "onResponse: ");
-                    }
-                });
+                    skillLevelsAdapter = new ArrayAdapter(CurrentGameActivity.this, R.layout.support_simple_spinner_dropdown_item, skillLevelNames);
+                }
             }
-        }).start();
+            @Override
+            public void onFailure(Call<SkillLevelResponseWrapper> call, Throwable t) {
+                Log.d(TAG, "" + t.getMessage());
+            }
+        });
     }
 
     private void getPlayer() {
-        new Thread(new Runnable() {
+        playerService.getPlayerById(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0)).enqueue(new Callback<PlayerResponseWrapper>() {
             @Override
-            public void run() {
-                Interceptor interceptor = new Interceptor() {
-                    @Override
-                    public okhttp3.Response intercept(Chain chain) throws IOException {
-                        Request newRequest = chain.request().newBuilder()
-                                .addHeader("Accept", "application/json")
-                                .addHeader("authorization", "Bearer " + token)
-                                .build();
-                        return chain.proceed(newRequest);
-                    }
-                };
-                OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
-                okHttpBuilder.addInterceptor(interceptor);
-                OkHttpClient okHttpClient = okHttpBuilder.build();
-
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(BASE_URL)
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .client(okHttpClient)
-                        .build();
-
-                IPlayer playerService = retrofit.create(IPlayer.class);
-
-                playerService.getPlayerById(prefs.getInt("playerId", 0)).enqueue(new Callback<PlayerResponseWrapper>() {
-                    @Override
-                    public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
-
-                        if(response.body() != null) {
-                            Player result = response.body().getResult();
-                            player = result;
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
-
-                    }
-                });
+            public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
+                if(response.body() != null) {
+                    Player result = response.body().getResult();
+                    player = result;
+                }
             }
-        }).start();
+            @Override
+            public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
+                Log.d(TAG, "" + t.getMessage());
+            }
+        });
     }
 
     private void getData(){
@@ -279,97 +235,55 @@ public class CurrentGameActivity extends AppCompatActivity {
         body.setVisibility(View.GONE);
         next.setVisibility(View.GONE);
 
-        new Thread(new Runnable() {
+        gameService.getCurrentGame(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0)).enqueue(new Callback<GameResponseWrapper>() {
+
             @Override
-            public void run() {
-                Interceptor interceptor = new Interceptor() {
-                    @Override
-                    public okhttp3.Response intercept(Chain chain) throws IOException {
-                        Request newRequest = chain.request().newBuilder()
-                                .addHeader("Accept", "application/json")
-                                .addHeader("authorization", "Bearer " + token)
-                                .build();
-                        return chain.proceed(newRequest);
+            public void onResponse(Call<GameResponseWrapper> call, Response<GameResponseWrapper> response) {
+                if(response.body() != null){
+                    currentGame = response.body().result;
+                    if(currentGame != null){
+                        tv_game_title.setText("Wedstrijd #" + currentGame.getId());
+                        tv_game_player1.setText(currentGame.getPlayer1().getName());
+                        tv_game_player2.setText(currentGame.getPlayer2().getName());
+                        tv_game_field.setText(currentGame.getField().getName());
+
+                        empty.setVisibility(View.GONE);
+                        body.setVisibility(View.VISIBLE);
                     }
-                };
-                OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
-                okHttpBuilder.addInterceptor(interceptor);
-                OkHttpClient okHttpClient = okHttpBuilder.build();
-
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(BASE_URL)
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .client(okHttpClient)
-                        .build();
-
-                IGame service = retrofit.create(IGame.class);
-
-                service.getCurrentGame(prefs.getInt("playerId", 0)).enqueue(new Callback<GameResponseWrapper>() {
-
-                    @Override
-                    public void onResponse(Call<GameResponseWrapper> call, Response<GameResponseWrapper> response) {
-                        if(response.body() != null){
-                            Game game = response.body().result;
-                            if(game != null){
-                                SharedPreferences.Editor edit = prefs.edit();
-                                Gson gson = new Gson();
-                                String json = gson.toJson(game);
-                                edit.putString("currentGame", json);
-
-                                edit.apply();
-
-                                tv_game_title.setText("Wedstrijd #" + game.getId());
-                                tv_game_player1.setText(game.getPlayer1().getName());
-                                tv_game_player2.setText(game.getPlayer2().getName());
-                                tv_game_field.setText(game.getField().getName());
-
-                                empty.setVisibility(View.GONE);
-                                body.setVisibility(View.VISIBLE);
-                            }
-                        }
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onFailure(Call<GameResponseWrapper> call, Throwable t) {
-                        swipeRefreshLayout.setRefreshing(false);
-                        Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
-
-                service.getNextGame(prefs.getInt("playerId", 0)).enqueue(new Callback<GameResponseWrapper>() {
-
-                    @Override
-                    public void onResponse(Call<GameResponseWrapper> call, Response<GameResponseWrapper> response) {
-                        if(response.body() != null){
-                            Game game = response.body().result;
-                            if(game != null){
-                                SharedPreferences.Editor edit = prefs.edit();
-                                Gson gson = new Gson();
-                                String json = gson.toJson(game);
-                                edit.putString("nextGame", json);
-
-                                edit.apply();
-
-                                tv_nextgame_title.setText("Wedstrijd #" + game.getId());
-                                tv_nextgame_player1.setText(game.getPlayer1().getName());
-                                tv_nextgame_player2.setText(game.getPlayer2().getName());
-
-                                empty.setVisibility(View.GONE);
-                                next.setVisibility(View.VISIBLE);
-                            }
-                        }
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onFailure(Call<GameResponseWrapper> call, Throwable t) {
-                        swipeRefreshLayout.setRefreshing(false);
-                        Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+                }
+                swipeRefreshLayout.setRefreshing(false);
             }
-        }).start();
+
+            @Override
+            public void onFailure(Call<GameResponseWrapper> call, Throwable t) {
+                swipeRefreshLayout.setRefreshing(false);
+                Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
+        gameService.getNextGame(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0)).enqueue(new Callback<GameResponseWrapper>() {
+            @Override
+            public void onResponse(Call<GameResponseWrapper> call, Response<GameResponseWrapper> response) {
+                if(response.body() != null){
+                    nextGame = response.body().result;
+                    if(nextGame != null){
+                        tv_nextgame_title.setText("Wedstrijd #" + nextGame.getId());
+                        tv_nextgame_player1.setText(nextGame.getPlayer1().getName());
+                        tv_nextgame_player2.setText(nextGame.getPlayer2().getName());
+
+                        empty.setVisibility(View.GONE);
+                        next.setVisibility(View.VISIBLE);
+                    }
+                }
+                swipeRefreshLayout.setRefreshing(false);
+            }
+
+            @Override
+            public void onFailure(Call<GameResponseWrapper> call, Throwable t) {
+                swipeRefreshLayout.setRefreshing(false);
+                Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public void openAccountDialog() {
@@ -379,9 +293,13 @@ public class CurrentGameActivity extends AppCompatActivity {
                 .setView(accountDialogView)
                 .create();
         accountDialog.show();
-
         Spinner spinner = accountDialogView.findViewById(R.id.edit_spinner);
-        spinner.setAdapter(aa);
+        spinner.setAdapter(skillLevelsAdapter);
+
+        // Views
+        Button confirm_bn = accountDialogView.findViewById(R.id.editPlayer_bn_confirm);
+        EditText name_input = accountDialogView.findViewById(R.id.editPlayer_name_input);
+        name_input.setText(player.getName());
 
         // Close dialog
         ImageView close_btn = accountDialogView.findViewById(R.id.dialog_close);
@@ -392,63 +310,28 @@ public class CurrentGameActivity extends AppCompatActivity {
             }
         });
 
-        String token = prefs.getString("token", "");
-
-        Button confirm_bn = accountDialogView.findViewById(R.id.editPlayer_bn_confirm);
-        EditText name_input = accountDialogView.findViewById(R.id.editPlayer_name_input);
-        name_input.setText(player.getName());
+        // Update player
         confirm_bn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SkillLevel selectedSkillLevel = skillLevels[spinner.getSelectedItemPosition()];
 
-                new Thread(new Runnable() {
+                playerService.updatePlayer(player.getId(), new UpdatePlayerModel(name_input.getText().toString(), selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
                     @Override
-                    public void run() {
-                        Interceptor interceptor = new Interceptor() {
-                            @Override
-                            public okhttp3.Response intercept(Chain chain) throws IOException {
-                                Request newRequest = chain.request().newBuilder()
-                                        .addHeader("Accept", "application/json")
-                                        .addHeader("authorization", "Bearer " + token)
-                                        .build();
-                                return chain.proceed(newRequest);
-                            }
-                        };
-                        OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
-                        okHttpBuilder.addInterceptor(interceptor);
-                        OkHttpClient okHttpClient = okHttpBuilder.build();
-
-                        Retrofit retrofit = new Retrofit.Builder()
-                                .baseUrl(BASE_URL)
-                                .addConverterFactory(GsonConverterFactory.create())
-                                .client(okHttpClient)
-                                .build();
-
-                        IPlayer service = retrofit.create(IPlayer.class);
-                        SkillLevel selectedSkillLevel = skillLevels[spinner.getSelectedItemPosition()];
-
-                        service.updatePlayer(player.getId(), new UpdatePlayerModel(name_input.getText().toString(), selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
-                            @Override
-                            public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
-
-                                if (response.body() != null) {
-                                    Player updated = response.body().getResult();
-                                    player = updated;
-                                    accountDialog.dismiss();
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
-
-                            }
-                        });
+                    public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
+                        if (response.body() != null) {
+                            Player updated = response.body().getResult();
+                            player = updated;
+                            accountDialog.dismiss();
+                        }
                     }
-                }).start();
+                    @Override
+                    public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
+                        Log.d(TAG, "" + t.getMessage());
+                    }
+                });
             }
         });
-
-
     }
 
     public void openDialog() {
@@ -457,15 +340,14 @@ public class CurrentGameActivity extends AppCompatActivity {
         AlertDialog scoreDialog = new AlertDialog.Builder(this)
                 .setView(dialogView)
                 .create();
-        Gson gson = new Gson();
-        String json = prefs.getString("currentGame", "");
-        Game game = gson.fromJson(json, Game.class);
+
+        // Views
+        Button confirm_btn = dialogView.findViewById(R.id.dialog_confirm_btn);
 
         TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
         TextView dialog_subtitle = dialogView.findViewById(R.id.dialog_subtitle);
-
-        dialog_title.setText("Score invullen voor wedstrijd #" + game.getId());
-        dialog_subtitle.setText(game.getPlayer1().getName() + " tegen " + game.getPlayer2().getName() + " in " + game.getField().getName());
+        dialog_title.setText("Score invullen voor wedstrijd #" + currentGame.getId());
+        dialog_subtitle.setText(currentGame.getPlayer1().getName() + " tegen " + currentGame.getPlayer2().getName() + " in " + currentGame.getField().getName());
 
         EditText set1_player1 = dialogView.findViewById(R.id.dialog_set1).findViewById(R.id.player1_score);
         EditText set1_player2 = dialogView.findViewById(R.id.dialog_set1).findViewById(R.id.player2_score);
@@ -474,12 +356,12 @@ public class CurrentGameActivity extends AppCompatActivity {
         EditText set3_player1 = dialogView.findViewById(R.id.dialog_set3).findViewById(R.id.player1_score);
         EditText set3_player2 = dialogView.findViewById(R.id.dialog_set3).findViewById(R.id.player2_score);
 
-        set1_player1.setHint(game.getPlayer1().getName());
-        set2_player1.setHint(game.getPlayer1().getName());
-        set3_player1.setHint(game.getPlayer1().getName());
-        set1_player2.setHint(game.getPlayer2().getName());
-        set2_player2.setHint(game.getPlayer2().getName());
-        set3_player2.setHint(game.getPlayer2().getName());
+        set1_player1.setHint(currentGame.getPlayer1().getName());
+        set2_player1.setHint(currentGame.getPlayer1().getName());
+        set3_player1.setHint(currentGame.getPlayer1().getName());
+        set1_player2.setHint(currentGame.getPlayer2().getName());
+        set2_player2.setHint(currentGame.getPlayer2().getName());
+        set3_player2.setHint(currentGame.getPlayer2().getName());
 
         // Close dialog
         ImageView close_btn = dialogView.findViewById(R.id.dialog_close);
@@ -491,13 +373,13 @@ public class CurrentGameActivity extends AppCompatActivity {
         });
 
         // Confirm score
-        Button confirm_btn = dialogView.findViewById(R.id.dialog_confirm_btn);
         confirm_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 List<Integer> scoreA = new ArrayList<>();
                 List<Integer> scoreB = new ArrayList<>();
 
+                // Basic validation check
                 if(set1_player1.getText().toString().isEmpty() || set1_player2.getText().toString().isEmpty() || set2_player1.getText().toString().isEmpty() || set2_player2.getText().toString().isEmpty()) {
                     Toast.makeText(CurrentGameActivity.this, "Vul minstens 2 sets in", Toast.LENGTH_SHORT).show();
                     return;
@@ -513,48 +395,23 @@ public class CurrentGameActivity extends AppCompatActivity {
                     scoreB.add(Integer.parseInt(set3_player2.getText().toString()));
                 }
 
-                new Thread(new Runnable() {
+                // Apply score
+                gameService.addScoreToCurrentGame(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0), currentGame.getId(), new ScoreModel(scoreA, scoreB)).enqueue(new Callback<Object>() {
+
                     @Override
-                    public void run() {
-                        Interceptor interceptor = new Interceptor() {
-                            @Override
-                            public okhttp3.Response intercept(Chain chain) throws IOException {
-                                Request newRequest = chain.request().newBuilder()
-                                        .addHeader("Accept", "application/json")
-                                        .addHeader("authorization", "Bearer " + token)
-                                        .build();
-                                return chain.proceed(newRequest);
-                            }
-                        };
-                        OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
-                        okHttpBuilder.addInterceptor(interceptor);
-                        OkHttpClient okHttpClient = okHttpBuilder.build();
-
-                        Retrofit retrofit = new Retrofit.Builder()
-                                .baseUrl(BASE_URL)
-                                .addConverterFactory(GsonConverterFactory.create())
-                                .client(okHttpClient)
-                                .build();
-
-                        IGame service = retrofit.create(IGame.class);
-                        service.addScoreToCurrentGame(prefs.getInt("playerId", 0), game.getId(), new ScoreModel(scoreA, scoreB)).enqueue(new Callback<Object>() {
-
-                            @Override
-                            public void onResponse(Call<Object> call, Response<Object> response) {
-                                if(response.body() != null){
-                                    Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
-                                    scoreDialog.dismiss();
-                                    getData();
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Call<Object> call, Throwable t) {
-                                Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        });
+                    public void onResponse(Call<Object> call, Response<Object> response) {
+                        if(response.body() != null){
+                            Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
+                            scoreDialog.dismiss();
+                            getData();
+                        }
                     }
-                }).start();
+
+                    @Override
+                    public void onFailure(Call<Object> call, Throwable t) {
+                        Log.d(TAG, "" + t.getMessage());
+                    }
+                });
             }
         });
         scoreDialog.show();

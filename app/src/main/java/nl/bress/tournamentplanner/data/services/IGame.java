@@ -1,8 +1,7 @@
-package nl.bress.tournamentplanner.dao.interfaces;
+package nl.bress.tournamentplanner.data.services;
 
-import nl.bress.tournamentplanner.domain.GameResponseWrapper;
-import nl.bress.tournamentplanner.domain.LogoutModel;
-import nl.bress.tournamentplanner.domain.ScoreModel;
+import nl.bress.tournamentplanner.data.models.GameResponseWrapper;
+import nl.bress.tournamentplanner.data.models.ScoreModel;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
