@@ -10,26 +10,20 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.gson.Gson;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.data.factory.ServiceFactory;
 import nl.bress.tournamentplanner.data.services.IAuth;
-import nl.bress.tournamentplanner.data.services.IGame;
 import nl.bress.tournamentplanner.data.services.IPlayer;
 import nl.bress.tournamentplanner.data.services.ISkillLevel;
 import nl.bress.tournamentplanner.data.models.LoginModel;
@@ -39,14 +33,10 @@ import nl.bress.tournamentplanner.data.models.NewPlayerModel;
 import nl.bress.tournamentplanner.data.models.PlayerResponseWrapper;
 import nl.bress.tournamentplanner.domain.SkillLevel;
 import nl.bress.tournamentplanner.data.models.SkillLevelResponseWrapper;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NewPlayerActivity extends AppCompatActivity {
     // Constants
@@ -54,8 +44,6 @@ public class NewPlayerActivity extends AppCompatActivity {
 
     // Utilities
     private SharedPreferences prefs;
-    private SharedPreferences.Editor prefs_editor;
-    private String token;
     private IAuth authService;
     private IPlayer playerService;
     private ISkillLevel skillLevelService;
@@ -77,8 +65,7 @@ public class NewPlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_new_player);
 
         prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
-        prefs_editor = prefs.edit();
-        token = prefs.getString(MainActivity.PREFS_TOKEN, "");
+        String token = prefs.getString(MainActivity.PREFS_TOKEN, "");
         authService = ServiceFactory.createAuthService();
         playerService = ServiceFactory.createPlayerService(token);
         skillLevelService = ServiceFactory.createSkillLevelService(token);
@@ -97,24 +84,21 @@ public class NewPlayerActivity extends AppCompatActivity {
         confirm_btn = findViewById(R.id.editPlayer_bn_confirm);
         name_input = findViewById(R.id.editPlayer_name_input);
 
-        confirm_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SkillLevel selectedSkillLevel = skillLevels[spinner.getSelectedItemPosition()];
+        confirm_btn.setOnClickListener(view -> {
+            SkillLevel selectedSkillLevel = skillLevels[spinner.getSelectedItemPosition()];
 
-                playerService.createPlayer(new NewPlayerModel(name_input.getText().toString(), email, selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
-                    @Override
-                    public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
-                        if(response.body() != null) {
-                            login();
-                        }
+            playerService.createPlayer(new NewPlayerModel(name_input.getText().toString(), email, selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
+                @Override
+                public void onResponse(@NonNull Call<PlayerResponseWrapper> call, @NonNull Response<PlayerResponseWrapper> response) {
+                    if(response.body() != null) {
+                        login();
                     }
+                }
 
-                    @Override
-                    public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
-                        Log.d(TAG, "" + t.getMessage());                    }
-                });
-            }
+                @Override
+                public void onFailure(@NonNull Call<PlayerResponseWrapper> call, @NonNull Throwable t) {
+                    Log.d(TAG, "" + t.getMessage());                    }
+            });
         });
 
         name_input.addTextChangedListener(new TextWatcher() {
@@ -130,11 +114,7 @@ public class NewPlayerActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if(editable.toString().length() > 0) {
-                    confirm_btn.setEnabled(true);
-                } else {
-                    confirm_btn.setEnabled(false);
-                }
+                confirm_btn.setEnabled(editable.toString().length() > 0);
             }
         });
 
@@ -143,38 +123,35 @@ public class NewPlayerActivity extends AppCompatActivity {
     private void login() {
         final String[] fbtoken = {null};
 
-        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
-            @Override
-            public void onComplete(@NonNull @org.jetbrains.annotations.NotNull Task<String> task) {
-                if (!task.isSuccessful()) {
-                    Toast.makeText(NewPlayerActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    return;
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Toast.makeText(NewPlayerActivity.this, task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            fbtoken[0] = task.getResult();
+
+
+            authService.login(new LoginModel(email, pass, fbtoken[0])).enqueue(new Callback<LoginResponseWrapper>() {
+                @Override
+                public void onResponse(@NonNull Call<LoginResponseWrapper> call, @NonNull Response<LoginResponseWrapper> response) {
+                    if(response.body() != null){
+                        LoginResponse loginResponse = response.body().result;
+                        SharedPreferences.Editor edit = prefs.edit();
+                        edit.putString(MainActivity.PREFS_TOKEN, loginResponse.token);
+                        edit.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.user.id);
+                        edit.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.user.email);
+                        edit.apply();
+
+                        startActivity(new Intent(NewPlayerActivity.this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                        finish();
+                    }
                 }
 
-                fbtoken[0] = task.getResult();
-
-
-                authService.login(new LoginModel(email, pass, fbtoken[0])).enqueue(new Callback<LoginResponseWrapper>() {
-                    @Override
-                    public void onResponse(Call<LoginResponseWrapper> call, Response<LoginResponseWrapper> response) {
-                        if(response.body() != null){
-                            LoginResponse loginResponse = response.body().result;
-                            SharedPreferences.Editor edit = prefs.edit();
-                            edit.putString(MainActivity.PREFS_TOKEN, loginResponse.token);
-                            edit.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.user.id);
-                            edit.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.user.email);
-                            edit.apply();
-
-                            startActivity(new Intent(NewPlayerActivity.this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                            finish();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<LoginResponseWrapper> call, Throwable t) {
-                        Log.d(TAG, "" + t.getMessage());                    }
-                });
-            }
+                @Override
+                public void onFailure(@NonNull Call<LoginResponseWrapper> call, @NonNull Throwable t) {
+                    Log.d(TAG, "" + t.getMessage());                    }
+            });
         });
 
     }
@@ -183,7 +160,7 @@ public class NewPlayerActivity extends AppCompatActivity {
         skillLevelService.getAllSkillLevels().enqueue(new Callback<SkillLevelResponseWrapper>() {
 
             @Override
-            public void onResponse(Call<SkillLevelResponseWrapper> call, Response<SkillLevelResponseWrapper> response) {
+            public void onResponse(@NonNull Call<SkillLevelResponseWrapper> call, @NonNull Response<SkillLevelResponseWrapper> response) {
                 if(response.body() != null){
                     skillLevels = response.body().getResult();
 
@@ -197,7 +174,7 @@ public class NewPlayerActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<SkillLevelResponseWrapper> call, Throwable t) {
+            public void onFailure(@NonNull Call<SkillLevelResponseWrapper> call, @NonNull Throwable t) {
                 Toast.makeText(NewPlayerActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });

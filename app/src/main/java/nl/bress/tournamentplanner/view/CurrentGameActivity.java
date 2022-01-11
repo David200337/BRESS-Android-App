@@ -1,7 +1,6 @@
 package nl.bress.tournamentplanner.view;
 
-import static nl.bress.tournamentplanner.view.MainActivity.BASE_URL;
-
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -18,16 +17,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.gson.Gson;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.data.factory.ServiceFactory;
 import nl.bress.tournamentplanner.data.services.IAuth;
@@ -43,14 +38,9 @@ import nl.bress.tournamentplanner.data.models.ScoreModel;
 import nl.bress.tournamentplanner.domain.SkillLevel;
 import nl.bress.tournamentplanner.data.models.SkillLevelResponseWrapper;
 import nl.bress.tournamentplanner.data.models.UpdatePlayerModel;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CurrentGameActivity extends AppCompatActivity {
     // Constants
@@ -59,10 +49,8 @@ public class CurrentGameActivity extends AppCompatActivity {
     // Utilities
     private SharedPreferences prefs;
     private SharedPreferences.Editor prefs_editor;
-    private Gson gson;
-    private String token;
-    private IAuth authService;
     private IGame gameService;
+    private IAuth authService;
     private IPlayer playerService;
     private ISkillLevel skillLevelService;
 
@@ -71,7 +59,6 @@ public class CurrentGameActivity extends AppCompatActivity {
     private ConstraintLayout body;
     private ConstraintLayout empty;
     private ConstraintLayout next;
-    private ImageView iv_refresh;
     private TextView tv_game_title;
     private TextView tv_game_player1;
     private TextView tv_game_player2;
@@ -96,8 +83,7 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         prefs = getSharedPreferences(MainActivity.PREFS_NAME, Context.MODE_PRIVATE);
         prefs_editor = prefs.edit();
-        gson = new Gson();
-        token = prefs.getString(MainActivity.PREFS_TOKEN, "");
+        String token = prefs.getString(MainActivity.PREFS_TOKEN, "");
         authService = ServiceFactory.createAuthService();
         gameService = ServiceFactory.createGameService(token);
         playerService = ServiceFactory.createPlayerService(token);
@@ -108,7 +94,7 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         swipeRefreshLayout = findViewById(R.id.current_game_srl);
 
-        iv_refresh = findViewById(R.id.current_game_iv_refresh);
+        ImageView iv_refresh = findViewById(R.id.current_game_iv_refresh);
 
         body = findViewById(R.id.current_game_cl_body);
         empty = findViewById(R.id.current_game_cl_nogame);
@@ -127,75 +113,37 @@ public class CurrentGameActivity extends AppCompatActivity {
         tv_game_player2 = findViewById(R.id.current_game_tv_player2);
         tv_game_field = findViewById(R.id.current_game_tv_field);
         Button btn_game_score = findViewById(R.id.current_game_bn_score);
-        btn_game_score.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openDialog();
-            }
-        });
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        btn_game_score.setOnClickListener(view -> openDialog());
 
         getData();
 
         Button logOutButton = findViewById(R.id.current_game_bn_logout);
-
-        logOutButton.setOnClickListener(new View.OnClickListener() {
+        logOutButton.setOnClickListener(View -> authService.logout(new LogoutModel(prefs.getString(MainActivity.PREFS_PLAYER_EMAIL, ""))).enqueue(new Callback<Object>() {
             @Override
-            public void onClick(View view) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Retrofit retrofit = new Retrofit.Builder()
-                                .baseUrl(BASE_URL)
-                                .addConverterFactory(GsonConverterFactory.create())
-                                .build();
-
-                        IAuth service = retrofit.create(IAuth.class);
-
-                        service.logout(new LogoutModel(prefs.getString("playerEmail", ""))).enqueue(new Callback<Object>() {
-
-                            @Override
-                            public void onResponse(Call<Object> call, Response<Object> response) {
-                                if(response.body() != null){
-                                    prefs_editor.remove(MainActivity.PREFS_TOKEN);
-                                    prefs_editor.remove(MainActivity.PREFS_PLAYER_ID);
-                                    prefs_editor.remove(MainActivity.PREFS_PLAYER_EMAIL);
-                                    prefs_editor.apply();
-
-                                    startActivity(new Intent(CurrentGameActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                                }
-                            }
-
-                            @Override
-                            public void onFailure(Call<Object> call, Throwable t) {
-                                Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                }).start();
+            public void onResponse(@NonNull Call<Object> call, @NonNull Response<Object> response) {
+                if(response.body() != null){
+                    prefs_editor.remove(MainActivity.PREFS_TOKEN);
+                    prefs_editor.remove(MainActivity.PREFS_PLAYER_ID);
+                    prefs_editor.remove(MainActivity.PREFS_PLAYER_EMAIL);
+                    prefs_editor.apply();
+                    startActivity(new Intent(CurrentGameActivity.this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                }
             }
-        });
-
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onRefresh() {
-                getData();
+            public void onFailure(@NonNull Call<Object> call, @NonNull Throwable t) {
+                Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
             }
-        });
+        }));
 
-        iv_refresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openAccountDialog();
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(this::getData);
+
+        iv_refresh.setOnClickListener(view -> openAccountDialog());
     }
 
     private void getSkillLevels() {
         skillLevelService.getAllSkillLevels().enqueue(new Callback<SkillLevelResponseWrapper>() {
             @Override
-            public void onResponse(Call<SkillLevelResponseWrapper> call, Response<SkillLevelResponseWrapper> response) {
+            public void onResponse(@NonNull Call<SkillLevelResponseWrapper> call, @NonNull Response<SkillLevelResponseWrapper> response) {
                 if(response.body() != null) {
                     skillLevels = response.body().getResult();
 
@@ -207,7 +155,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                 }
             }
             @Override
-            public void onFailure(Call<SkillLevelResponseWrapper> call, Throwable t) {
+            public void onFailure(@NonNull Call<SkillLevelResponseWrapper> call, @NonNull Throwable t) {
                 Log.d(TAG, "" + t.getMessage());
             }
         });
@@ -216,14 +164,13 @@ public class CurrentGameActivity extends AppCompatActivity {
     private void getPlayer() {
         playerService.getPlayerById(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0)).enqueue(new Callback<PlayerResponseWrapper>() {
             @Override
-            public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
+            public void onResponse(@NonNull Call<PlayerResponseWrapper> call, @NonNull Response<PlayerResponseWrapper> response) {
                 if(response.body() != null) {
-                    Player result = response.body().getResult();
-                    player = result;
+                    player = response.body().getResult();
                 }
             }
             @Override
-            public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
+            public void onFailure(@NonNull Call<PlayerResponseWrapper> call, @NonNull Throwable t) {
                 Log.d(TAG, "" + t.getMessage());
             }
         });
@@ -238,7 +185,7 @@ public class CurrentGameActivity extends AppCompatActivity {
         gameService.getCurrentGame(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0)).enqueue(new Callback<GameResponseWrapper>() {
 
             @Override
-            public void onResponse(Call<GameResponseWrapper> call, Response<GameResponseWrapper> response) {
+            public void onResponse(@NonNull Call<GameResponseWrapper> call, @NonNull Response<GameResponseWrapper> response) {
                 if(response.body() != null){
                     currentGame = response.body().result;
                     if(currentGame != null){
@@ -255,7 +202,7 @@ public class CurrentGameActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<GameResponseWrapper> call, Throwable t) {
+            public void onFailure(@NonNull Call<GameResponseWrapper> call, @NonNull Throwable t) {
                 swipeRefreshLayout.setRefreshing(false);
                 Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
             }
@@ -263,7 +210,7 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         gameService.getNextGame(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0)).enqueue(new Callback<GameResponseWrapper>() {
             @Override
-            public void onResponse(Call<GameResponseWrapper> call, Response<GameResponseWrapper> response) {
+            public void onResponse(@NonNull Call<GameResponseWrapper> call, @NonNull Response<GameResponseWrapper> response) {
                 if(response.body() != null){
                     nextGame = response.body().result;
                     if(nextGame != null){
@@ -279,7 +226,7 @@ public class CurrentGameActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<GameResponseWrapper> call, Throwable t) {
+            public void onFailure(@NonNull Call<GameResponseWrapper> call, @NonNull Throwable t) {
                 swipeRefreshLayout.setRefreshing(false);
                 Toast.makeText(CurrentGameActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
             }
@@ -303,34 +250,25 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         // Close dialog
         ImageView close_btn = accountDialogView.findViewById(R.id.dialog_close);
-        close_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                accountDialog.dismiss();
-            }
-        });
+        close_btn.setOnClickListener(view -> accountDialog.dismiss());
 
         // Update player
-        confirm_bn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SkillLevel selectedSkillLevel = skillLevels[spinner.getSelectedItemPosition()];
+        confirm_bn.setOnClickListener(view -> {
+            SkillLevel selectedSkillLevel = skillLevels[spinner.getSelectedItemPosition()];
 
-                playerService.updatePlayer(player.getId(), new UpdatePlayerModel(name_input.getText().toString(), selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
-                    @Override
-                    public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
-                        if (response.body() != null) {
-                            Player updated = response.body().getResult();
-                            player = updated;
-                            accountDialog.dismiss();
-                        }
+            playerService.updatePlayer(player.getId(), new UpdatePlayerModel(name_input.getText().toString(), selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
+                @Override
+                public void onResponse(@NonNull Call<PlayerResponseWrapper> call, @NonNull Response<PlayerResponseWrapper> response) {
+                    if (response.body() != null) {
+                        player = response.body().getResult();
+                        accountDialog.dismiss();
                     }
-                    @Override
-                    public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
-                        Log.d(TAG, "" + t.getMessage());
-                    }
-                });
-            }
+                }
+                @Override
+                public void onFailure(@NonNull Call<PlayerResponseWrapper> call, @NonNull Throwable t) {
+                    Log.d(TAG, "" + t.getMessage());
+                }
+            });
         });
     }
 
@@ -349,12 +287,16 @@ public class CurrentGameActivity extends AppCompatActivity {
         dialog_title.setText("Score invullen voor wedstrijd #" + currentGame.getId());
         dialog_subtitle.setText(currentGame.getPlayer1().getName() + " tegen " + currentGame.getPlayer2().getName() + " in " + currentGame.getField().getName());
 
-        EditText set1_player1 = dialogView.findViewById(R.id.dialog_set1).findViewById(R.id.player1_score);
-        EditText set1_player2 = dialogView.findViewById(R.id.dialog_set1).findViewById(R.id.player2_score);
-        EditText set2_player1 = dialogView.findViewById(R.id.dialog_set2).findViewById(R.id.player1_score);
-        EditText set2_player2 = dialogView.findViewById(R.id.dialog_set2).findViewById(R.id.player2_score);
-        EditText set3_player1 = dialogView.findViewById(R.id.dialog_set3).findViewById(R.id.player1_score);
-        EditText set3_player2 = dialogView.findViewById(R.id.dialog_set3).findViewById(R.id.player2_score);
+        View set1_layout = dialogView.findViewById(R.id.dialog_set1);
+        View set2_layout = dialogView.findViewById(R.id.dialog_set2);
+        View set3_layout = dialogView.findViewById(R.id.dialog_set3);
+
+        EditText set1_player1 = set1_layout.findViewById(R.id.player1_score);
+        EditText set1_player2 = set1_layout.findViewById(R.id.player2_score);
+        EditText set2_player1 = set2_layout.findViewById(R.id.player1_score);
+        EditText set2_player2 = set2_layout.findViewById(R.id.player2_score);
+        EditText set3_player1 = set3_layout.findViewById(R.id.player1_score);
+        EditText set3_player2 = set3_layout.findViewById(R.id.player2_score);
 
         set1_player1.setHint(currentGame.getPlayer1().getName());
         set2_player1.setHint(currentGame.getPlayer1().getName());
@@ -365,54 +307,46 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         // Close dialog
         ImageView close_btn = dialogView.findViewById(R.id.dialog_close);
-        close_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                scoreDialog.dismiss();
-            }
-        });
+        close_btn.setOnClickListener(view -> scoreDialog.dismiss());
 
         // Confirm score
-        confirm_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                List<Integer> scoreA = new ArrayList<>();
-                List<Integer> scoreB = new ArrayList<>();
+        confirm_btn.setOnClickListener(view -> {
+            List<Integer> scoreA = new ArrayList<>();
+            List<Integer> scoreB = new ArrayList<>();
 
-                // Basic validation check
-                if(set1_player1.getText().toString().isEmpty() || set1_player2.getText().toString().isEmpty() || set2_player1.getText().toString().isEmpty() || set2_player2.getText().toString().isEmpty()) {
-                    Toast.makeText(CurrentGameActivity.this, "Vul minstens 2 sets in", Toast.LENGTH_SHORT).show();
-                    return;
-                } else {
-                    scoreA.add(Integer.parseInt(set1_player1.getText().toString()));
-                    scoreA.add(Integer.parseInt(set2_player1.getText().toString()));
-                    scoreB.add(Integer.parseInt(set1_player2.getText().toString()));
-                    scoreB.add(Integer.parseInt(set2_player2.getText().toString()));
-                }
-
-                if(!set3_player1.getText().toString().isEmpty() && !set3_player2.getText().toString().isEmpty()) {
-                    scoreA.add(Integer.parseInt(set3_player1.getText().toString()));
-                    scoreB.add(Integer.parseInt(set3_player2.getText().toString()));
-                }
-
-                // Apply score
-                gameService.addScoreToCurrentGame(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0), currentGame.getId(), new ScoreModel(scoreA, scoreB)).enqueue(new Callback<Object>() {
-
-                    @Override
-                    public void onResponse(Call<Object> call, Response<Object> response) {
-                        if(response.body() != null){
-                            Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
-                            scoreDialog.dismiss();
-                            getData();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<Object> call, Throwable t) {
-                        Log.d(TAG, "" + t.getMessage());
-                    }
-                });
+            // Basic validation check
+            if(set1_player1.getText().toString().isEmpty() || set1_player2.getText().toString().isEmpty() || set2_player1.getText().toString().isEmpty() || set2_player2.getText().toString().isEmpty()) {
+                Toast.makeText(CurrentGameActivity.this, "Vul minstens 2 sets in", Toast.LENGTH_SHORT).show();
+                return;
+            } else {
+                scoreA.add(Integer.parseInt(set1_player1.getText().toString()));
+                scoreA.add(Integer.parseInt(set2_player1.getText().toString()));
+                scoreB.add(Integer.parseInt(set1_player2.getText().toString()));
+                scoreB.add(Integer.parseInt(set2_player2.getText().toString()));
             }
+
+            if(!set3_player1.getText().toString().isEmpty() && !set3_player2.getText().toString().isEmpty()) {
+                scoreA.add(Integer.parseInt(set3_player1.getText().toString()));
+                scoreB.add(Integer.parseInt(set3_player2.getText().toString()));
+            }
+
+            // Apply score
+            gameService.addScoreToCurrentGame(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0), currentGame.getId(), new ScoreModel(scoreA, scoreB)).enqueue(new Callback<Object>() {
+
+                @Override
+                public void onResponse(@NonNull Call<Object> call, @NonNull Response<Object> response) {
+                    if(response.body() != null){
+                        Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
+                        scoreDialog.dismiss();
+                        getData();
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call<Object> call, @NonNull Throwable t) {
+                    Log.d(TAG, "" + t.getMessage());
+                }
+            });
         });
         scoreDialog.show();
     }
