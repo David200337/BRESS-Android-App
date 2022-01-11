@@ -1,7 +1,5 @@
 package nl.bress.tournamentplanner.data.retrofit;
 
-import static nl.bress.tournamentplanner.view.MainActivity.BASE_URL;
-
 import java.io.IOException;
 
 import okhttp3.Interceptor;
@@ -13,6 +11,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitClient {
     public static final String BASE_URL = "https://serverbuijsen.nl/api/";
     private static Retrofit retrofit;
+
+    private RetrofitClient() {}
 
     public static Retrofit getRetrofit() {
         retrofit = new Retrofit.Builder()

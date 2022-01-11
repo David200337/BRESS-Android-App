@@ -136,11 +136,11 @@ public class NewPlayerActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(@NonNull Call<LoginResponseWrapper> call, @NonNull Response<LoginResponseWrapper> response) {
                     if(response.body() != null){
-                        LoginResponse loginResponse = response.body().result;
+                        LoginResponse loginResponse = response.body().getResult();
                         SharedPreferences.Editor edit = prefs.edit();
-                        edit.putString(MainActivity.PREFS_TOKEN, loginResponse.token);
-                        edit.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.user.id);
-                        edit.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.user.email);
+                        edit.putString(MainActivity.PREFS_TOKEN, loginResponse.getToken());
+                        edit.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.getUser().getId());
+                        edit.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.getUser().getEmail());
                         edit.apply();
 
                         startActivity(new Intent(NewPlayerActivity.this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
