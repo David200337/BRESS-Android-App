@@ -17,15 +17,19 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.gson.Gson;
 
 import org.w3c.dom.Text;
 
 import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.dao.interfaces.IAuth;
+import nl.bress.tournamentplanner.dao.interfaces.IPlayer;
 import nl.bress.tournamentplanner.domain.LoginModel;
 import nl.bress.tournamentplanner.domain.LoginResponse;
 import nl.bress.tournamentplanner.domain.LoginResponseWrapper;
 
+import nl.bress.tournamentplanner.domain.Player;
+import nl.bress.tournamentplanner.domain.PlayerResponseWrapper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -83,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                                         .build();
 
                                 IAuth service = retrofit.create(IAuth.class);
+                                IPlayer playerService = retrofit.create(IPlayer.class);
 
                                 service.login(new LoginModel(et_email.getText().toString(), et_password.getText().toString(), fbtoken[0])).enqueue(new Callback<LoginResponseWrapper>() {
                                     @Override
@@ -94,6 +99,23 @@ public class MainActivity extends AppCompatActivity {
                                             edit.putInt("playerId", loginResponse.user.id);
                                             edit.putString("playerEmail", loginResponse.user.email);
                                             edit.apply();
+
+                                            playerService.getPlayerById(loginResponse.user.id).enqueue(new Callback<PlayerResponseWrapper>() {
+                                                @Override
+                                                public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
+                                                    if(response.body() != null) {
+                                                        Player player = response.body().getResult();
+                                                        Gson gson = new Gson();
+                                                        String json = gson.toJson(player);
+                                                        edit.putString("player", json);
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
+
+                                                }
+                                            });
 
                                             startActivity(new Intent(MainActivity.this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                                         }

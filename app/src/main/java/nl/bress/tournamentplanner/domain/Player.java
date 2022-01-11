@@ -4,11 +4,11 @@ public class Player {
     private int id;
     private String name;
     private String email;
-    private String score;
-    private String pointBalance;
+    private int score;
+    private int pointBalance;
     private SkillLevel skillLevel;
 
-    public Player(int id, String name, String email, String score, String pointBalance, SkillLevel skillLevel) {
+    public Player(int id, String name, String email, int score, int pointBalance, SkillLevel skillLevel) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -41,19 +41,19 @@ public class Player {
         this.email = email;
     }
 
-    public String getScore() {
+    public int getScore() {
         return score;
     }
 
-    public void setScore(String score) {
+    public void setScore(int score) {
         this.score = score;
     }
 
-    public String getPointBalance() {
+    public int getPointBalance() {
         return pointBalance;
     }
 
-    public void setPointBalance(String pointBalance) {
+    public void setPointBalance(int pointBalance) {
         this.pointBalance = pointBalance;
     }
 

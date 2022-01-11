@@ -28,10 +28,14 @@ import java.util.List;
 import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.dao.interfaces.IAuth;
 import nl.bress.tournamentplanner.dao.interfaces.IGame;
+import nl.bress.tournamentplanner.dao.interfaces.IPlayer;
 import nl.bress.tournamentplanner.domain.Game;
 import nl.bress.tournamentplanner.domain.GameResponseWrapper;
 import nl.bress.tournamentplanner.domain.LogoutModel;
+import nl.bress.tournamentplanner.domain.Player;
+import nl.bress.tournamentplanner.domain.PlayerResponseWrapper;
 import nl.bress.tournamentplanner.domain.ScoreModel;
+import nl.bress.tournamentplanner.domain.UpdatePlayerModel;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -151,7 +155,7 @@ public class CurrentGameActivity extends AppCompatActivity {
         iv_refresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getData();
+                openAccountDialog();
             }
         });
     }
@@ -253,6 +257,81 @@ public class CurrentGameActivity extends AppCompatActivity {
                 });
             }
         }).start();
+    }
+
+    public void openAccountDialog() {
+        // Prepare dialog
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.layout_account_dialog, null);
+        AlertDialog accountDialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+        accountDialog.show();
+
+        // Close dialog
+        ImageView close_btn = dialogView.findViewById(R.id.dialog_close);
+        close_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                accountDialog.dismiss();
+            }
+        });
+
+        Button confirm_bn = dialogView.findViewById(R.id.editPlayer_bn_confirm);
+        confirm_bn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Interceptor interceptor = new Interceptor() {
+                            @Override
+                            public okhttp3.Response intercept(Chain chain) throws IOException {
+                                Request newRequest = chain.request().newBuilder()
+                                        .addHeader("Accept", "application/json")
+                                        .addHeader("authorization", "Bearer " + token)
+                                        .build();
+                                return chain.proceed(newRequest);
+                            }
+                        };
+                        OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
+                        okHttpBuilder.addInterceptor(interceptor);
+                        OkHttpClient okHttpClient = okHttpBuilder.build();
+
+                        Retrofit retrofit = new Retrofit.Builder()
+                                .baseUrl(MainActivity.BASE_URL)
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .client(okHttpClient)
+                                .build();
+
+                        IPlayer service = retrofit.create(IPlayer.class);
+                        String json = prefs.getString("player", "");
+                        Gson gson = new Gson();
+                        Player player = gson.fromJson(json, Player.class);
+
+                        service.updatePlayer(player.getId(), new UpdatePlayerModel(player.getName(), player.getSkillLevel().getId())).enqueue(new Callback<PlayerResponseWrapper>() {
+                            @Override
+                            public void onResponse(Call<PlayerResponseWrapper> call, Response<PlayerResponseWrapper> response) {
+                                if (response.body() != null) {
+                                    Player updated = response.body().getResult();
+                                    SharedPreferences.Editor edit = prefs.edit();
+                                    String json = gson.toJson(updated, Player.class);
+                                    edit.putString("player", json);
+                                    edit.apply();
+                                    accountDialog.dismiss();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<PlayerResponseWrapper> call, Throwable t) {
+
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+
     }
 
     public void openDialog() {
