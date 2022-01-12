@@ -1,7 +1,7 @@
 package nl.bress.tournamentplanner.data.models;
 
 public class LogoutModel {
-    public String email;
+    private String email;
 
     public LogoutModel(String email) {
         this.email = email;

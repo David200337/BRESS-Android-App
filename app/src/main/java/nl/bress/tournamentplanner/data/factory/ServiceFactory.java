@@ -8,6 +8,8 @@ import nl.bress.tournamentplanner.data.services.ISkillLevel;
 
 public class ServiceFactory {
 
+    private ServiceFactory() {}
+
     public static IAuth createAuthService() {
         return RetrofitClient.getRetrofit().create(IAuth.class);
     }

@@ -1,8 +1,8 @@
 package nl.bress.tournamentplanner.domain;
 
 public class SkillLevel {
-    public int id;
-    public String name;
+    private int id;
+    private String name;
 
     public SkillLevel(int id, String name) {
         this.id = id;

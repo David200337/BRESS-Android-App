@@ -3,11 +3,11 @@ package nl.bress.tournamentplanner.data.models;
 import nl.bress.tournamentplanner.domain.User;
 
 public class LoginResponse {
-    public String token;
-    public String expireDate;
-    public User user;
+    private String token;
+    private String expireDate;
+    private User user;
 
-    public LoginResponse(String token, String expireDate, User user, int id) {
+    public LoginResponse(String token, String expireDate, User user) {
         this.token = token;
         this.expireDate = expireDate;
         this.user = user;

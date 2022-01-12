@@ -1,7 +1,7 @@
 package nl.bress.tournamentplanner.data.models;
 
 public class LoginResponseWrapper {
-    public LoginResponse result;
+    private LoginResponse result;
 
     public LoginResponseWrapper(LoginResponse result) {
         this.result = result;
