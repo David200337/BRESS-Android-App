@@ -25,11 +25,11 @@
             app:srcCompat="@drawable/logo_bress_orange" />
 
         <TextView
-            android:id="@+id/editPlayer_name_label"
+            android:id="@+id/newPlayer_firstName_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Naam"
+            android:text="Voornaam"
             android:textColor="@color/black"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -37,13 +37,13 @@
             app:layout_constraintTop_toBottomOf="@id/imageView" />
 
         <EditText
-            android:id="@+id/editPlayer_name_input"
+            android:id="@+id/newPlayer_firstName_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@color/white"
             android:backgroundTint="@color/white"
-            android:hint="Naam"
+            android:hint="Voornaam"
             android:inputType="textEmailAddress"
             android:padding="5dp"
             android:textColor="@color/black"
@@ -51,7 +51,35 @@
             android:textSize="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editPlayer_name_label" />
+            app:layout_constraintTop_toBottomOf="@id/newPlayer_firstName_label" />
+
+        <TextView
+            android:id="@+id/newPlayer_lastName_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Achternaam"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/newPlayer_firstName_input" />
+
+        <EditText
+            android:id="@+id/newPlayer_lastName_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@color/white"
+            android:backgroundTint="@color/white"
+            android:hint="Achternaam"
+            android:inputType="textEmailAddress"
+            android:padding="5dp"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            app:layout_constraintTop_toBottomOf="@id/newPlayer_lastName_label"
+            tools:layout_editor_absoluteX="50dp" />
+
 
         <LinearLayout
             android:id="@+id/spinner_layout"
@@ -60,10 +88,10 @@
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editPlayer_name_input">
+            app:layout_constraintTop_toBottomOf="@id/newPlayer_lastName_input">
 
             <TextView
-                android:id="@+id/edit_spinner_label"
+                android:id="@+id/newPlayer_spinner_label"
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -75,7 +103,7 @@
 
             <Spinner
                 android:layout_weight="1"
-                android:id="@+id/edit_spinner"
+                android:id="@+id/newPlayer_spinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp" />
@@ -84,7 +112,7 @@
 
 
         <Button
-            android:id="@+id/editPlayer_bn_confirm"
+            android:id="@+id/newPlayer_bn_confirm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"

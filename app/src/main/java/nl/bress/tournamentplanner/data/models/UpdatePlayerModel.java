@@ -1,20 +1,30 @@
 package nl.bress.tournamentplanner.data.models;
 
 public class UpdatePlayerModel {
-    private String name;
+    private String firstName;
+    private String lastName;
     private int skillLevelId;
 
-    public UpdatePlayerModel(String name, int skillLevelId) {
-        this.name = name;
+    public UpdatePlayerModel(String firstName, String lastName, int skillLevelId) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.skillLevelId = skillLevelId;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public int getSkillLevelId() {
