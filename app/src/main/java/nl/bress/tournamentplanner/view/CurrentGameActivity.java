@@ -387,6 +387,11 @@ public class CurrentGameActivity extends AppCompatActivity {
                 error.setText(set2);
                 error.setVisibility(View.VISIBLE);
                 isValid = false;
+            } else if (isValid) {
+                scoreA.add(set1_player1);
+                scoreA.add(set2_player1);
+                scoreB.add(set1_player2);
+                scoreB.add(set2_player2);
             }
 
             // set 3 validation
@@ -412,6 +417,9 @@ public class CurrentGameActivity extends AppCompatActivity {
                         error.setText(set3);
                         error.setVisibility(View.VISIBLE);
                         isValid = false;
+                    } else if (isValid) {
+                        scoreA.add(set3_player1);
+                        scoreB.add(set3_player2);
                     }
                 }
             } else if(isValid && !extraSetNeeded && (set3_player1 > -1 || set3_player2 > -1)) {
@@ -428,8 +436,12 @@ public class CurrentGameActivity extends AppCompatActivity {
                     public void onResponse(@NonNull Call<Object> call, @NonNull Response<Object> response) {
                         if(response.body() != null){
                             Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
+                            error.setVisibility(View.INVISIBLE);
                             scoreDialog.dismiss();
                             getData();
+                        } else if (response.errorBody() != null) {
+                            error.setText("Score is al ingevuld");
+                            error.setVisibility(View.VISIBLE);
                         }
                     }
 
