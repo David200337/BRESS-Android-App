@@ -51,7 +51,8 @@ public class NewPlayerActivity extends AppCompatActivity {
     // Views
     private Spinner spinner;
     private Button confirm_btn;
-    private EditText name_input;
+    private EditText first_name;
+    private EditText last_name;
 
     // Data
     private SkillLevel[] skillLevels;
@@ -80,14 +81,16 @@ public class NewPlayerActivity extends AppCompatActivity {
 
         getSkillLevels();
 
-        spinner = findViewById(R.id.edit_spinner);
-        confirm_btn = findViewById(R.id.editPlayer_bn_confirm);
-        name_input = findViewById(R.id.editPlayer_name_input);
+        spinner = findViewById(R.id.newPlayer_spinner);
+        confirm_btn = findViewById(R.id.newPlayer_bn_confirm);
+        first_name = findViewById(R.id.newPlayer_firstName_input);
+        last_name = findViewById(R.id.newPlayer_lastName_input);
+
 
         confirm_btn.setOnClickListener(view -> {
             SkillLevel selectedSkillLevel = skillLevels[spinner.getSelectedItemPosition()];
 
-            playerService.createPlayer(new NewPlayerModel(name_input.getText().toString(), email, selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
+            playerService.createPlayer(new NewPlayerModel(first_name.getText().toString(), last_name.getText().toString(), email, selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
                 @Override
                 public void onResponse(@NonNull Call<PlayerResponseWrapper> call, @NonNull Response<PlayerResponseWrapper> response) {
                     if(response.body() != null) {
@@ -101,7 +104,7 @@ public class NewPlayerActivity extends AppCompatActivity {
             });
         });
 
-        name_input.addTextChangedListener(new TextWatcher() {
+        first_name.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -114,7 +117,25 @@ public class NewPlayerActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                confirm_btn.setEnabled(editable.toString().length() > 0);
+                Log.d(TAG, "" + last_name.getText().toString() );
+                confirm_btn.setEnabled(editable.toString().length() > 0 && last_name.getText().toString().length() > 0);
+            }
+        });
+
+        last_name.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                confirm_btn.setEnabled(editable.toString().length() > 0 && first_name.getText().toString().length() > 0);
             }
         });
 
