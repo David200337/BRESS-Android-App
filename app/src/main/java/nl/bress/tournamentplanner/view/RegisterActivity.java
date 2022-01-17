@@ -77,7 +77,7 @@ public class RegisterActivity extends AppCompatActivity {
                         prefsEditor.putString(MainActivity.PREFS_TOKEN, response.body().getResult().getToken());
                         prefsEditor.apply();
 
-                        startActivity(new Intent(RegisterActivity.this, NewPlayerActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP).putExtra(INTENT_EMAIL, emailInput.getText().toString().toLowerCase()).putExtra(INTENT_PASS, passwordInput.getText().toString()));
+                        startActivity(new Intent(RegisterActivity.this, NewPlayerActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra(INTENT_EMAIL, emailInput.getText().toString().toLowerCase()).putExtra(INTENT_PASS, passwordInput.getText().toString()));
                         finish();
                     }
                 }

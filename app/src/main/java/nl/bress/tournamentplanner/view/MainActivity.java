@@ -29,7 +29,6 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     // Constants
-    public static final String BASE_URL = "https://serverbuijsen.nl/api/";
     public static final String PREFS_NAME = "myPrefs";
     public static final String PREFS_TOKEN = "token";
     public static final String PREFS_PLAYER_ID = "playerId";
@@ -55,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         authService = ServiceFactory.createAuthService();
 
         // Redirect to CurrentGameActivity if user is logged in
-        if(!prefs.getString(PREFS_TOKEN, "").equals("")){
+        if(!prefs.getString(PREFS_TOKEN, "").equals("") && prefs.getInt(PREFS_PLAYER_ID, 0) != 0){
             startActivity(new Intent(this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
         }
 
@@ -110,8 +109,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        if(!prefs.getString(MainActivity.PREFS_TOKEN, "").equals("")){
+        if(!prefs.getString(MainActivity.PREFS_TOKEN, "").equals("") && prefs.getInt(PREFS_PLAYER_ID, 0) != 0){
             startActivity(new Intent(this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
         }
     }
