@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -269,6 +270,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(@NonNull Call<PlayerResponseWrapper> call, @NonNull Response<PlayerResponseWrapper> response) {
                     if (response.body() != null) {
+                        Toast.makeText(getBaseContext(),"Account aangepast", Toast.LENGTH_SHORT).show();
                         player = response.body().getResult();
                         accountDialog.dismiss();
                     }
@@ -346,6 +348,8 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         // Confirm score
         confirm_btn.setOnClickListener(view -> {
+            ProgressBar progressBar = dialogView.findViewById(R.id.progress);
+            progressBar.setVisibility(View.VISIBLE);
             List<Integer> scoreA = new ArrayList<>();
             List<Integer> scoreB = new ArrayList<>();
             
@@ -373,6 +377,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                 // validation first 2 sets for empty fields && negative digits
                 error.setText("Vul minstens 2 sets in (geen negatieve getallen)");
                 error.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
                 isValid = false;
             }
 
@@ -382,10 +387,12 @@ public class CurrentGameActivity extends AppCompatActivity {
             if(isValid && set1 != null) {
                 error.setText(set1);
                 error.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
                 isValid = false;
             } else if (isValid && set2 != null) {
                 error.setText(set2);
                 error.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
                 isValid = false;
             } else if (isValid) {
                 scoreA.add(set1_player1);
@@ -410,12 +417,14 @@ public class CurrentGameActivity extends AppCompatActivity {
                     // Missing scores
                     error.setText("Set 3 vereist bij een gelijke stand");
                     error.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.INVISIBLE);
                     isValid = false;
                 } else {
                     String set3 = validateSet(set3_player1, set3_player2);
                     if(set3 != null) {
                         error.setText(set3);
                         error.setVisibility(View.VISIBLE);
+                        progressBar.setVisibility(View.INVISIBLE);
                         isValid = false;
                     } else if (isValid) {
                         scoreA.add(set3_player1);
@@ -425,6 +434,7 @@ public class CurrentGameActivity extends AppCompatActivity {
             } else if(isValid && !extraSetNeeded && (set3_player1 > -1 || set3_player2 > -1)) {
                 error.setText("3e set is overbodig");
                 error.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
                 isValid = false;
             }
 
@@ -434,6 +444,8 @@ public class CurrentGameActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(@NonNull Call<Object> call, @NonNull Response<Object> response) {
+                        progressBar.setVisibility(View.INVISIBLE);
+
                         if(response.body() != null){
                             Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
                             error.setVisibility(View.INVISIBLE);
