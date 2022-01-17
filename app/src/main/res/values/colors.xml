@@ -15,4 +15,5 @@
     <color name="default_text">#000000</color>
     <color name="reversed_text">#FFFFFFFF</color>
     <color name="custom_radio_grey">#c7c7c7</color>
+    <color name="red">#cc0000</color>
 </resources>

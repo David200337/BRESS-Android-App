@@ -3,6 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Qiang Loozen/AndroidStudioProjects/BRESS-Android-App/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/Users/Qiang Loozen/AndroidStudioProjects/BRESS-Android-App/app/src/main/res/layout/activity_new_player.xml" value="0.12708333333333333" />
+        <entry key="..\:/Users/Qiang Loozen/AndroidStudioProjects/BRESS-Android-App/app/src/main/res/layout/activity_register.xml" value="0.1" />
+        <entry key="..\:/Users/Qiang Loozen/AndroidStudioProjects/BRESS-Android-App/app/src/main/res/layout/layout_account_dialog.xml" value="0.12708333333333333" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/button_disabled.xml" value="0.22135416666666666" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/button_enabled.xml" value="0.22135416666666666" />
         <entry key="..\:/Users/Qiang/StudioProjects/BRESS-Android-App/app/src/main/res/drawable/button_selector.xml" value="0.22135416666666666" />

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     // Views
     private EditText etEmail;
     private EditText etPassword;
+    private TextView tvError;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         etEmail = findViewById(R.id.login_et_email);
         etPassword = findViewById(R.id.login_et_password);
+        tvError = findViewById(R.id.login_error);
         Button bnConfirm = findViewById(R.id.login_bn_confirm);
         TextView bnRegister = findViewById(R.id.register_link);
 
@@ -87,8 +90,12 @@ public class MainActivity extends AppCompatActivity {
                         prefsEditor.putInt(MainActivity.PREFS_PLAYER_ID, loginResponse.getUser().getId());
                         prefsEditor.putString(MainActivity.PREFS_PLAYER_EMAIL, loginResponse.getUser().getEmail());
                         prefsEditor.apply();
+                        tvError.setVisibility(View.INVISIBLE);
 
                         startActivity(new Intent(MainActivity.this, CurrentGameActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                    } else if (response.errorBody() != null) {
+                        tvError.setVisibility(View.VISIBLE);
+                        tvError.setText("Email of wachtwoord is fout");
                     }
                 }
 

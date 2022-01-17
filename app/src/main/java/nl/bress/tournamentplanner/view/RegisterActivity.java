@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -39,6 +40,7 @@ public class RegisterActivity extends AppCompatActivity {
     // Views
     private EditText emailInput;
     private EditText passwordInput;
+    private TextView duplicateError;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +52,7 @@ public class RegisterActivity extends AppCompatActivity {
         prefsEditor = prefs.edit();
         authService = ServiceFactory.createAuthService();
 
+        duplicateError = findViewById(R.id.register_duplicate_error);
         emailInput = findViewById(R.id.register_email_input);
         passwordInput = findViewById(R.id.register_password_input);
         EditText confirmPasswordInput = findViewById(R.id.register_confirm_password_input);
@@ -77,6 +80,9 @@ public class RegisterActivity extends AppCompatActivity {
                         startActivity(new Intent(RegisterActivity.this, NewPlayerActivity.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP).putExtra(INTENT_EMAIL, emailInput.getText().toString().toLowerCase()).putExtra(INTENT_PASS, passwordInput.getText().toString()));
                         finish();
                     }
+                }
+                if(response.errorBody() != null) {
+                    duplicateError.setVisibility(View.VISIBLE);
                 }
             }
 
