@@ -189,8 +189,8 @@ public class CurrentGameActivity extends AppCompatActivity {
                     currentGame = response.body().getResult();
                     if(currentGame != null){
                         tvGameTitle.setText("Wedstrijd #" + currentGame.getId());
-                        tvGamePlayer1.setText(currentGame.getPlayer1().getName());
-                        tvGamePlayer2.setText(currentGame.getPlayer2().getName());
+                        tvGamePlayer1.setText(currentGame.getPlayer1().getFirstName() + " " + currentGame.getPlayer1().getLastName());
+                        tvGamePlayer2.setText(currentGame.getPlayer2().getFirstName() + " "  + currentGame.getPlayer2().getLastName());
                         tvGameField.setText(currentGame.getField().getName());
 
                         empty.setVisibility(View.GONE);
@@ -214,8 +214,8 @@ public class CurrentGameActivity extends AppCompatActivity {
                     nextGame = response.body().getResult();
                     if(nextGame != null){
                         tvNextGameTitle.setText("Wedstrijd #" + nextGame.getId());
-                        tvNextGamePlayer1.setText(nextGame.getPlayer1().getName());
-                        tvNextGamePlayer2.setText(nextGame.getPlayer2().getName());
+                        tvNextGamePlayer1.setText(nextGame.getPlayer1().getFirstName() + " "  + nextGame.getPlayer1().getLastName());
+                        tvNextGamePlayer2.setText(nextGame.getPlayer2().getFirstName() + " "  + nextGame.getPlayer2().getLastName());
 
                         empty.setVisibility(View.GONE);
                         next.setVisibility(View.VISIBLE);
@@ -239,13 +239,23 @@ public class CurrentGameActivity extends AppCompatActivity {
                 .setView(accountDialogView)
                 .create();
         accountDialog.show();
-        Spinner spinner = accountDialogView.findViewById(R.id.edit_spinner);
-        spinner.setAdapter(skillLevelsAdapter);
 
         // Views
+        Spinner spinner = accountDialogView.findViewById(R.id.edit_spinner);
+        spinner.setAdapter(skillLevelsAdapter);
         Button confirm_bn = accountDialogView.findViewById(R.id.editPlayer_bn_confirm);
-        EditText name_input = accountDialogView.findViewById(R.id.editPlayer_name_input);
-        name_input.setText(player.getName());
+        EditText first_name = accountDialogView.findViewById(R.id.editPlayer_firstName_input);
+        EditText last_name = accountDialogView.findViewById(R.id.editPlayer_lastName_input);
+
+        first_name.setText(player.getFirstName());
+        last_name.setText(player.getLastName());
+
+        for(int i = 0; i < skillLevels.length; i ++) {
+            SkillLevel selected = skillLevels[i];
+            if(player.getSkillLevel().getId() == selected.getId()) {
+                spinner.setSelection(i);
+            }
+        }
 
         // Close dialog
         ImageView close_btn = accountDialogView.findViewById(R.id.dialog_close);
@@ -255,7 +265,7 @@ public class CurrentGameActivity extends AppCompatActivity {
         confirm_bn.setOnClickListener(view -> {
             SkillLevel selectedSkillLevel = skillLevels[spinner.getSelectedItemPosition()];
 
-            playerService.updatePlayer(player.getId(), new UpdatePlayerModel(name_input.getText().toString(), selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
+            playerService.updatePlayer(player.getId(), new UpdatePlayerModel(first_name.getText().toString(), last_name.getText().toString(), selectedSkillLevel.getId())).enqueue(new Callback<PlayerResponseWrapper>() {
                 @Override
                 public void onResponse(@NonNull Call<PlayerResponseWrapper> call, @NonNull Response<PlayerResponseWrapper> response) {
                     if (response.body() != null) {
@@ -284,7 +294,7 @@ public class CurrentGameActivity extends AppCompatActivity {
         TextView dialog_title = dialogView.findViewById(R.id.dialog_title);
         TextView dialog_subtitle = dialogView.findViewById(R.id.dialog_subtitle);
         dialog_title.setText("Score invullen voor wedstrijd #" + currentGame.getId());
-        dialog_subtitle.setText(currentGame.getPlayer1().getName() + " tegen " + currentGame.getPlayer2().getName() + " in " + currentGame.getField().getName());
+        dialog_subtitle.setText(currentGame.getPlayer1().getFirstName() + " tegen " + currentGame.getPlayer2().getFirstName() + " in " + currentGame.getField().getName());
 
         View set1_layout = dialogView.findViewById(R.id.dialog_set1);
         View set2_layout = dialogView.findViewById(R.id.dialog_set2);
@@ -297,12 +307,12 @@ public class CurrentGameActivity extends AppCompatActivity {
         EditText set3_player1 = set3_layout.findViewById(R.id.player1_score);
         EditText set3_player2 = set3_layout.findViewById(R.id.player2_score);
 
-        set1_player1.setHint(currentGame.getPlayer1().getName());
-        set2_player1.setHint(currentGame.getPlayer1().getName());
-        set3_player1.setHint(currentGame.getPlayer1().getName());
-        set1_player2.setHint(currentGame.getPlayer2().getName());
-        set2_player2.setHint(currentGame.getPlayer2().getName());
-        set3_player2.setHint(currentGame.getPlayer2().getName());
+        set1_player1.setHint(currentGame.getPlayer1().getFirstName());
+        set2_player1.setHint(currentGame.getPlayer1().getFirstName());
+        set3_player1.setHint(currentGame.getPlayer1().getFirstName());
+        set1_player2.setHint(currentGame.getPlayer2().getFirstName());
+        set2_player2.setHint(currentGame.getPlayer2().getFirstName());
+        set3_player2.setHint(currentGame.getPlayer2().getFirstName());
 
         // Close dialog
         ImageView close_btn = dialogView.findViewById(R.id.dialog_close);
