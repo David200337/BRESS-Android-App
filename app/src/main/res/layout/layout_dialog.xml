@@ -6,6 +6,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:indeterminateTint="@color/black"
+        android:translationZ="1dp"
+        app:layout_constraintBottom_toBottomOf="@+id/dialog_set3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/dialog_set1"
+        android:visibility="invisible"/>
 
     <TextView
         android:id="@+id/dialog_set1_label"
@@ -118,12 +129,23 @@
         app:layout_constraintStart_toEndOf="@+id/dialog_set3_label"
         app:layout_constraintTop_toBottomOf="@+id/dialog_set2" />
 
+    <TextView
+        android:id="@+id/score_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Foutmelding"
+        android:textColor="@color/red"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_set3"
+        android:visibility="invisible"/>
+
     <Button
         android:id="@+id/dialog_confirm_btn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
         android:backgroundTint="@color/black"
         android:paddingVertical="15dp"
@@ -133,7 +155,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dialog_set3"
+        app:layout_constraintTop_toBottomOf="@+id/score_error"
         app:layout_constraintVertical_bias="0.114" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

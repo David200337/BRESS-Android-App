@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import nl.bress.tournamentplanner.R;
 import nl.bress.tournamentplanner.data.factory.ServiceFactory;
+import nl.bress.tournamentplanner.data.models.ScoreModel;
 import nl.bress.tournamentplanner.data.services.IAuth;
 import nl.bress.tournamentplanner.data.services.IGame;
 import nl.bress.tournamentplanner.data.services.IPlayer;
@@ -33,7 +35,6 @@ import nl.bress.tournamentplanner.data.models.GameResponseWrapper;
 import nl.bress.tournamentplanner.data.models.LogoutModel;
 import nl.bress.tournamentplanner.domain.Player;
 import nl.bress.tournamentplanner.data.models.PlayerResponseWrapper;
-import nl.bress.tournamentplanner.data.models.ScoreModel;
 import nl.bress.tournamentplanner.domain.SkillLevel;
 import nl.bress.tournamentplanner.data.models.SkillLevelResponseWrapper;
 import nl.bress.tournamentplanner.data.models.UpdatePlayerModel;
@@ -269,6 +270,7 @@ public class CurrentGameActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(@NonNull Call<PlayerResponseWrapper> call, @NonNull Response<PlayerResponseWrapper> response) {
                     if (response.body() != null) {
+                        Toast.makeText(getBaseContext(),"Account aangepast", Toast.LENGTH_SHORT).show();
                         player = response.body().getResult();
                         accountDialog.dismiss();
                     }
@@ -279,6 +281,32 @@ public class CurrentGameActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+
+    /**
+     * Validates one single set based on the score
+     *
+     * @param score1 Player1 points from set 1
+     * @param score2 Player2 points from set 1
+     * @return If score is invalid it wil return an error message, else it will return a null
+     */
+    private String validateSet(int score1, int score2) {
+        if (score1 < 11 && score2 < 11) {
+            // Winner must have at least 11 points or higher
+            return "Winnaar heeft minimaal 11 punten nodig";
+        }
+
+        if (Math.abs(score1 - score2) < 2) {
+            // Point difference of 2 is needed to end (win) a match
+            return "Minimum puntenverschil is 2";
+        }
+
+        if(Math.abs(score1 - score2) != 2 && (score1 > 11 || score2 > 11)) {
+            // If a score exceeds 11 points the maximum point difference can only be 2
+            return "Bij een score hoger dan 11 moet het verschil 2 zijn";
+        }
+
+        return null;
     }
 
     public void openDialog() {
@@ -300,19 +328,19 @@ public class CurrentGameActivity extends AppCompatActivity {
         View set2_layout = dialogView.findViewById(R.id.dialog_set2);
         View set3_layout = dialogView.findViewById(R.id.dialog_set3);
 
-        EditText set1_player1 = set1_layout.findViewById(R.id.player1_score);
-        EditText set1_player2 = set1_layout.findViewById(R.id.player2_score);
-        EditText set2_player1 = set2_layout.findViewById(R.id.player1_score);
-        EditText set2_player2 = set2_layout.findViewById(R.id.player2_score);
-        EditText set3_player1 = set3_layout.findViewById(R.id.player1_score);
-        EditText set3_player2 = set3_layout.findViewById(R.id.player2_score);
+        EditText et_set1_player1 = set1_layout.findViewById(R.id.player1_score);
+        EditText et_set1_player2 = set1_layout.findViewById(R.id.player2_score);
+        EditText et_set2_player1 = set2_layout.findViewById(R.id.player1_score);
+        EditText et_set2_player2 = set2_layout.findViewById(R.id.player2_score);
+        EditText et_set3_player1 = set3_layout.findViewById(R.id.player1_score);
+        EditText et_set3_player2 = set3_layout.findViewById(R.id.player2_score);
 
-        set1_player1.setHint(currentGame.getPlayer1().getFirstName());
-        set2_player1.setHint(currentGame.getPlayer1().getFirstName());
-        set3_player1.setHint(currentGame.getPlayer1().getFirstName());
-        set1_player2.setHint(currentGame.getPlayer2().getFirstName());
-        set2_player2.setHint(currentGame.getPlayer2().getFirstName());
-        set3_player2.setHint(currentGame.getPlayer2().getFirstName());
+        et_set1_player1.setHint(currentGame.getPlayer1().getFirstName());
+        et_set2_player1.setHint(currentGame.getPlayer1().getFirstName());
+        et_set3_player1.setHint(currentGame.getPlayer1().getFirstName());
+        et_set1_player2.setHint(currentGame.getPlayer2().getFirstName());
+        et_set2_player2.setHint(currentGame.getPlayer2().getFirstName());
+        et_set3_player2.setHint(currentGame.getPlayer2().getFirstName());
 
         // Close dialog
         ImageView close_btn = dialogView.findViewById(R.id.dialog_close);
@@ -320,42 +348,122 @@ public class CurrentGameActivity extends AppCompatActivity {
 
         // Confirm score
         confirm_btn.setOnClickListener(view -> {
+            ProgressBar progressBar = dialogView.findViewById(R.id.progress);
+            progressBar.setVisibility(View.VISIBLE);
             List<Integer> scoreA = new ArrayList<>();
             List<Integer> scoreB = new ArrayList<>();
+            
+            int set1_player1 = -1;
+            int set1_player2 = -1;
+            int set2_player1 = -1;
+            int set2_player2 = -1;
+            int set3_player1 = -1;
+            int set3_player2 = -1;
 
-            // Basic validation check
-            if(set1_player1.getText().toString().isEmpty() || set1_player2.getText().toString().isEmpty() || set2_player1.getText().toString().isEmpty() || set2_player2.getText().toString().isEmpty()) {
-                Toast.makeText(CurrentGameActivity.this, "Vul minstens 2 sets in", Toast.LENGTH_SHORT).show();
-                return;
+            try {
+                set1_player1 = Integer.parseInt(et_set1_player1.getText().toString());
+                set1_player2 = Integer.parseInt(et_set1_player2.getText().toString());
+                set2_player1 = Integer.parseInt(et_set2_player1.getText().toString());
+                set2_player2 = Integer.parseInt(et_set2_player2.getText().toString());
+                set3_player1 = Integer.parseInt(et_set3_player1.getText().toString());
+                set3_player2 = Integer.parseInt(et_set3_player2.getText().toString());
+            } catch (Exception e) { }
+
+            // Validate
+            TextView error = dialogView.findViewById(R.id.score_error);
+            boolean isValid = true;
+
+            if(set1_player1 < 0 || set1_player2 < 0 || set2_player1 < 0 || set2_player2 < 0) {
+                // validation first 2 sets for empty fields && negative digits
+                error.setText("Vul minstens 2 sets in (geen negatieve getallen)");
+                error.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
+                isValid = false;
+            }
+
+            String set1 = validateSet(set1_player1, set1_player2);
+            String set2 = validateSet(set2_player1, set2_player2);
+
+            if(isValid && set1 != null) {
+                error.setText(set1);
+                error.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
+                isValid = false;
+            } else if (isValid && set2 != null) {
+                error.setText(set2);
+                error.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
+                isValid = false;
+            } else if (isValid) {
+                scoreA.add(set1_player1);
+                scoreA.add(set2_player1);
+                scoreB.add(set1_player2);
+                scoreB.add(set2_player2);
+            }
+
+            // set 3 validation
+            boolean extraSetNeeded = false;
+
+            if (set1_player1 > set1_player2 && set2_player1 < set2_player2) {
+                extraSetNeeded = true;
+            }  else if (set1_player1 < set1_player2 && set2_player1 > set2_player2) {
+                extraSetNeeded = true;
             } else {
-                scoreA.add(Integer.parseInt(set1_player1.getText().toString()));
-                scoreA.add(Integer.parseInt(set2_player1.getText().toString()));
-                scoreB.add(Integer.parseInt(set1_player2.getText().toString()));
-                scoreB.add(Integer.parseInt(set2_player2.getText().toString()));
+                extraSetNeeded = false;
             }
 
-            if(!set3_player1.getText().toString().isEmpty() && !set3_player2.getText().toString().isEmpty()) {
-                scoreA.add(Integer.parseInt(set3_player1.getText().toString()));
-                scoreB.add(Integer.parseInt(set3_player2.getText().toString()));
-            }
-
-            // Apply score
-            gameService.addScoreToCurrentGame(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0), currentGame.getId(), new ScoreModel(scoreA, scoreB)).enqueue(new Callback<Object>() {
-
-                @Override
-                public void onResponse(@NonNull Call<Object> call, @NonNull Response<Object> response) {
-                    if(response.body() != null){
-                        Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
-                        scoreDialog.dismiss();
-                        getData();
+            if(isValid && extraSetNeeded) {
+                if(set3_player1 < 0 || set3_player2 < 0) {
+                    // Missing scores
+                    error.setText("Set 3 vereist bij een gelijke stand");
+                    error.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.INVISIBLE);
+                    isValid = false;
+                } else {
+                    String set3 = validateSet(set3_player1, set3_player2);
+                    if(set3 != null) {
+                        error.setText(set3);
+                        error.setVisibility(View.VISIBLE);
+                        progressBar.setVisibility(View.INVISIBLE);
+                        isValid = false;
+                    } else if (isValid) {
+                        scoreA.add(set3_player1);
+                        scoreB.add(set3_player2);
                     }
                 }
+            } else if(isValid && !extraSetNeeded && (set3_player1 > -1 || set3_player2 > -1)) {
+                error.setText("3e set is overbodig");
+                error.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.INVISIBLE);
+                isValid = false;
+            }
 
-                @Override
-                public void onFailure(@NonNull Call<Object> call, @NonNull Throwable t) {
-                    Log.d(TAG, "" + t.getMessage());
-                }
-            });
+            if(isValid) {
+                // Apply score
+                gameService.addScoreToCurrentGame(prefs.getInt(MainActivity.PREFS_PLAYER_ID, 0), currentGame.getId(), new ScoreModel(scoreA, scoreB)).enqueue(new Callback<Object>() {
+
+                    @Override
+                    public void onResponse(@NonNull Call<Object> call, @NonNull Response<Object> response) {
+                        progressBar.setVisibility(View.INVISIBLE);
+
+                        if(response.body() != null){
+                            Toast.makeText(getBaseContext(),"Score toegevoegd", Toast.LENGTH_SHORT).show();
+                            error.setVisibility(View.INVISIBLE);
+                            scoreDialog.dismiss();
+                            getData();
+                        } else if (response.errorBody() != null) {
+                            error.setText("Score is al ingevuld");
+                            error.setVisibility(View.VISIBLE);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<Object> call, @NonNull Throwable t) {
+                        Log.d(TAG, "" + t.getMessage());
+                    }
+                });
+                error.setVisibility(View.INVISIBLE);
+            }
         });
         scoreDialog.show();
     }
