@@ -28,7 +28,6 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     // Constants
-    public static final String BASE_URL = "https://serverbuijsen.nl/api/";
     public static final String PREFS_NAME = "myPrefs";
     public static final String PREFS_TOKEN = "token";
     public static final String PREFS_PLAYER_ID = "playerId";
