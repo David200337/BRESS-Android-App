@@ -14,14 +14,19 @@
         android:theme="@style/Theme.BRESStournooiplanner">
         <activity
             android:name=".view.NewPlayerActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".view.RegisterActivity"
-            android:exported="false" />
-        <activity android:name=".view.CurrentGameActivity" />
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".view.CurrentGameActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".view.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

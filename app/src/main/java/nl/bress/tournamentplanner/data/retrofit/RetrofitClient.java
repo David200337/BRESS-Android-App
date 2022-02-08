@@ -9,7 +9,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    public static final String BASE_URL = "https://serverbuijsen.nl/api/";
+    public static final String BASE_URL = "https://bress-toernooi.nl/api/";
     private static Retrofit retrofit;
 
     private RetrofitClient() {}
