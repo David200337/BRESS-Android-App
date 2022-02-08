@@ -1,5 +1,14 @@
 plugins {
     id 'com.android.application'
+    id "org.sonarqube" version "3.3"
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "David200337_BRESS-Android-App"
+        property "sonar.organization", "david200337"
+        property "sonar.host.url", "https://sonarcloud.io"
+    }
 }
 
 apply plugin: 'com.google.gms.google-services'
@@ -42,7 +51,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.2.0'
     implementation 'org.jetbrains:annotations:15.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-    testImplementation 'junit:junit:'
+    testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
